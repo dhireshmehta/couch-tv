@@ -29,11 +29,11 @@
       cx.send(JSON.stringify({ code: ONCE }));
       var cj = JSON.parse(cx.responseText || "{}");
       if (cj.ok && cj.key) KEY = cj.key;
-    } catch (e) {}
-    try { history.replaceState(null, "", location.pathname + location.search.replace(/([?&])(?:vidaa|once)=[^&]*&?/, "$1").replace(/[?&]$/, "") + location.hash); } catch (e) {}
+    } catch (e) { }
+    try { history.replaceState(null, "", location.pathname + location.search.replace(/([?&])(?:vidaa|once)=[^&]*&?/, "$1").replace(/[?&]$/, "") + location.hash); } catch (e) { }
   }
-  if (KEY) { try { localStorage.setItem("couchtv.key", KEY); } catch (e) {} }
-  else { try { KEY = localStorage.getItem("couchtv.key") || ""; } catch (e) {} }
+  if (KEY) { try { localStorage.setItem("couchtv.key", KEY); } catch (e) { } }
+  else { try { KEY = localStorage.getItem("couchtv.key") || ""; } catch (e) { } }
   // which TV this page is on (the launcher adds ?tv=<id> on any TV that is not the default); none = living room
   var TV_ID = (Q.match(/[?&]tv=([a-z-]+)/) || [])[1] || "";
   // The launcher's saved copy of this page, opened when the computer is off (or when there is no
@@ -64,8 +64,8 @@
   var THEME = "night", NIGHT = true, OLED = false, CLOCK24 = false;
   // OLED burn-in protection: micro-shift (±2px) every 60 seconds in the OLED look. The Smart Idle
   // ambient clock uses wider steps (±4px) while it is on screen.
-  var OLED_SHIFT_STEPS = [[0,0], [1,1], [-1,1], [2,-1], [-1,-1], [1,-2], [-2,0], [0,1]];
-  var IDLE_SHIFT_STEPS = [[0,0], [2,2], [-2,2], [4,-2], [-2,-2], [2,-4], [-4,0], [0,2]];
+  var OLED_SHIFT_STEPS = [[0, 0], [1, 1], [-1, 1], [2, -1], [-1, -1], [1, -2], [-2, 0], [0, 1]];
+  var IDLE_SHIFT_STEPS = [[0, 0], [2, 2], [-2, 2], [4, -2], [-2, -2], [2, -4], [-4, 0], [0, 2]];
   var oledShiftIdx = 0;
   var idleAmbientActive = false;
   function updateOledShift() {
@@ -127,7 +127,7 @@
   function stopSoundscape() {
     if (!window.Soundscape || window.Soundscape.current() === "off") return;
     window.Soundscape.stop();
-    try { renderQuick(); } catch (e) {}
+    try { renderQuick(); } catch (e) { }
   }
   // Follows the sleep timer: quieter over its last 15 minutes, off when it runs out, back to full volume
   // if the timer is cancelled or extended.
@@ -182,7 +182,7 @@
   // lay those out with flexbox and margins instead. ?old-engine=1 forces it, to look at it in a browser.
   var OLD_ENGINE = (function () {
     var grid = false;
-    try { grid = !!(window.CSS && window.CSS.supports && window.CSS.supports("display", "grid")); } catch (e) {}
+    try { grid = !!(window.CSS && window.CSS.supports && window.CSS.supports("display", "grid")); } catch (e) { }
     return !grid || /[?&]old-engine\b/.test(Q);
   })();
   document.documentElement.classList.toggle("old-engine", OLD_ENGINE);
@@ -192,14 +192,14 @@
   var PFX = MOCK || PREVIEW ? "mock:" : "";
   function kept(key) {
     var v = null;
-    try { if (TV && TV.kept) v = TV.kept(PFX + key); } catch (e) {}
-    if (v == null) try { v = localStorage.getItem(PFX + key); } catch (e) {}
+    try { if (TV && TV.kept) v = TV.kept(PFX + key); } catch (e) { }
+    if (v == null) try { v = localStorage.getItem(PFX + key); } catch (e) { }
     try { return v == null ? null : JSON.parse(v); } catch (e) { return null; }
   }
   function keep(key, value) {
     var j = JSON.stringify(value);
-    try { localStorage.setItem(PFX + key, j); } catch (e) {}
-    try { if (TV && TV.keep) TV.keep(PFX + key, j); } catch (e) {}
+    try { localStorage.setItem(PFX + key, j); } catch (e) { }
+    try { if (TV && TV.keep) TV.keep(PFX + key, j); } catch (e) { }
   }
 
   // Default order: YouTube, then Netflix, then the rest the way a household reaches for them.
@@ -270,6 +270,7 @@
     person: '<svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20.5c.8-3.9 3.7-6 7.5-6s6.7 2.1 7.5 6"/></svg>',
     bolt: '<svg viewBox="0 0 24 24"><path d="M13 2.8 5.5 13.2h5.8L10.5 21l8-10.6h-5.9z"/></svg>',
     info: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5M12 7.6v.2"/></svg>',
+    homeassistant: '<svg viewBox="0 0 24 24"><path d="M12 3L2 12h3v8h6v-5h2v5h6v-8h3L12 3zm0 3.5l5 4.5v7h-2v-5H9v5H7v-7l5-4.5z"/></svg>',
     download: '<svg viewBox="0 0 24 24"><path d="M12 3.5v11M7.5 10l4.5 4.5 4.5-4.5"/><path d="M4.5 16v2.5a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V16"/></svg>'
   };
   // weather glyphs for the date line, by Open-Meteo's WMO code
@@ -294,9 +295,9 @@
   // no switcher, two the pill switch, three or more a round head icon that opens a list.
   // With nobody set up, everything is shown ("both" to the bridge).
   var PEOPLE = [], NOBODY = false, who = null, pi = 0;
-  try { who = localStorage.getItem("tvhome.who"); } catch (e) {}
-  var zone = "grid", s = 0, g = 0;   // focus: zone, shelf index, grid index
-  var shelfEls = [], gridEls = [], gridItems = [];
+  try { who = localStorage.getItem("tvhome.who"); } catch (e) { }
+  var zone = "grid", s = 0, g = 0, haDevI = 0;   // focus: zone, shelf index, grid index, HA devices index
+  var shelfEls = [], gridEls = [], gridItems = [], haDevEls = [], haDevItems = [];
   var touched = false, expanded = false;
   var retryTimer = null, retryMs = 2500, statusTimer = null;
   var pmi = 0, plift = false;        // the people list: focused row, and whether that row is picked up
@@ -483,10 +484,10 @@
   function save() {
     if (MOCK || PREVIEW || OFFLINE) return;
     var j = JSON.stringify({ showsBy: data.showsBy, screens: data.screens, order: data.order });
-    try { localStorage.setItem(CACHE_KEY, j); } catch (e) {}
-    try { if (TV && TV.keep) TV.keep(CACHE_KEY, j); } catch (e) {}
+    try { localStorage.setItem(CACHE_KEY, j); } catch (e) { }
+    try { if (TV && TV.keep) TV.keep(CACHE_KEY, j); } catch (e) { }
   }
-  function mark(name) { try { performance.mark(name); } catch (e) {} }
+  function mark(name) { try { performance.mark(name); } catch (e) { } }
 
   function api(method, path, body, timeoutMs) {
     if (TV_ID) {
@@ -504,7 +505,7 @@
       if (KEY) x.setRequestHeader("Authorization", "Bearer " + KEY);
       x.onload = function () {
         var j = null;
-        try { j = JSON.parse(x.responseText); } catch (e) {}
+        try { j = JSON.parse(x.responseText); } catch (e) { }
         if (x.status >= 200 && x.status < 300 && j && j.ok !== false) resolve(j);
         else {
           var err = new Error((j && j.error) || t("bridge_no", { status: x.status }));
@@ -734,14 +735,16 @@
       y = Math.max(0.12, Math.min(y, 0.62 - (inter ? 0.77 : 0.92) * size - (below ? 0.06 : 0)));
       // cutout: true only when make-scene.py made the cut-out (scene-<id>-fg.webp); without it the
       // clock is simply drawn over the photo
-      out.push({ id: m.id, photo: "mine/scene-" + m.id, fg: m.cutout === true, glass: true, mine: true, n: out.length + 1,
+      out.push({
+        id: m.id, photo: "mine/scene-" + m.id, fg: m.cutout === true, glass: true, mine: true, n: out.length + 1,
         name: typeof m.name === "string" ? m.name.slice(0, 40) : "",
         x: ["left", "right"].indexOf(c.x) >= 0 ? c.x : "centre", y: y, size: size,
         inter: inter, weight: Math.round(share(c.weight, 100, 900, 600) / 100) * 100,
         below: below, dark: m.text === "dark",
         // video: true plays backgrounds/mine/scene-<id>.mp4 (muted, looping) over the photo, under
         // the cut-out and the clock, while this scene is the one on screen
-        video: m.video === true });
+        video: m.video === true
+      });
     });
     return out;
   }
@@ -825,7 +828,7 @@
       if (s.fg) el.querySelector(".fg").src = bgPath(s.photo + "-fg", ".webp", !s.mine);
       el.classList.add("ready");
       // decoded now, while the scene waits at opacity 0, rather than when its fade starts
-      Array.prototype.forEach.call(el.querySelectorAll("img"), function (img) { if (img.decode && img.src) img.decode().catch(function () {}); });
+      Array.prototype.forEach.call(el.querySelectorAll("img"), function (img) { if (img.decode && img.src) img.decode().catch(function () { }); });
     }
     drawClocks(el, s, glassShown);
   }
@@ -883,7 +886,7 @@
       vidTimer = setTimeout(function () { if (!root.classList.contains("has-video")) stopVideo(); }, 20000);
     }
     var p = v.play();
-    if (p && p.catch) p.catch(function () {});
+    if (p && p.catch) p.catch(function () { });
   }
   function stopVideo() {
     var v = $("bgvid");
@@ -892,7 +895,7 @@
     document.documentElement.classList.remove("has-video");
     v.pause();
     v.removeAttribute("src");
-    try { v.load(); } catch (e) {}
+    try { v.load(); } catch (e) { }
   }
   function pauseVideo() { stopSoundscape(); if (window.AmbientWeather) window.AmbientWeather.pause(); var v = $("bgvid"); if (v.getAttribute("src")) v.pause(); sceneVideos(false); }
   document.addEventListener("visibilitychange", function () {
@@ -906,7 +909,7 @@
   // looks, the ambient clock, screen off and the system's reduced motion setting leave clips off.
   function sceneVideos(on) {
     var calm = false;
-    try { calm = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches); } catch (e) {}
+    try { calm = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches); } catch (e) { }
     on = on && NIGHT && !calm && !idleAmbientActive && !screenOffActive;
     sceneEls.forEach(function (el, k) {
       var v = el.querySelector(".svid");
@@ -919,13 +922,13 @@
           v.src = "backgrounds/" + s.photo + ".mp4";
         }
         var p = v.play();
-        if (p && p.catch) p.catch(function () {});
+        if (p && p.catch) p.catch(function () { });
       } else if (v.getAttribute("src")) {
         v.pause();
         if (k !== scene || !NIGHT || calm) {   // off screen: let go of the decoder and the memory
           v.classList.remove("playing");
           v.removeAttribute("src");
-          try { v.load(); } catch (e) {}
+          try { v.load(); } catch (e) { }
         }
       }
     });
@@ -1106,14 +1109,16 @@
       data.weather = j;
       clock();
       updateAmbientWeather();
-    }, function () {});
+    }, function () { });
   }
 
   // Open-Meteo (free, no key), the same call the bridge makes. The words come from i18n.js.
-  var WMO_KEY = { 0: "wx_clear", 1: "wx_mostly_clear", 2: "wx_partly", 3: "wx_cloudy", 45: "wx_fog", 48: "wx_fog",
+  var WMO_KEY = {
+    0: "wx_clear", 1: "wx_mostly_clear", 2: "wx_partly", 3: "wx_cloudy", 45: "wx_fog", 48: "wx_fog",
     51: "wx_drizzle", 53: "wx_drizzle", 55: "wx_drizzle", 56: "wx_drizzle", 57: "wx_drizzle", 61: "wx_light_rain",
     63: "wx_rain", 65: "wx_heavy_rain", 66: "wx_rain", 67: "wx_rain", 80: "wx_showers", 81: "wx_showers",
-    82: "wx_heavy_showers", 95: "wx_storms", 96: "wx_storms", 99: "wx_storms" };
+    82: "wx_heavy_showers", 95: "wx_storms", 96: "wx_storms", 99: "wx_storms"
+  };
   function weatherDirect() {
     var url = "https://api.open-meteo.com/v1/forecast?latitude=" + WXCFG.lat + "&longitude=" + WXCFG.lon +
       "&current=temperature_2m,weather_code,is_day&timezone=" + encodeURIComponent(WXCFG.timezone || "auto") + "&forecast_days=1";
@@ -1471,7 +1476,7 @@
       try {
         var nativeMin = TV.getSleepRemainingMinutes();
         if (nativeMin > 0) sleepEnds = Date.now() + nativeMin * 60000;
-      } catch (e) {}
+      } catch (e) { }
     }
     if (!sleepEnds) {
       document.documentElement.classList.remove("bedtime-dim");
@@ -1684,7 +1689,7 @@
   function setSleep(minutes) {
     closeMenu();
     if (OFFLINE && TV && TV.setSleepTimer) {   // no bridge: the launcher keeps the timer itself; with one, the bridge does
-      try { TV.setSleepTimer(minutes); } catch (e) {}
+      try { TV.setSleepTimer(minutes); } catch (e) { }
     }
     sleepEnds = minutes ? Date.now() + minutes * 60000 : null;   // show it straight away
     renderQuick();
@@ -1741,10 +1746,10 @@
         }
         overlay.classList.add("active");
       }
-      try { if (TV && TV.setScreenOff) TV.setScreenOff(true); } catch (e) {}
+      try { if (TV && TV.setScreenOff) TV.setScreenOff(true); } catch (e) { }
     } else {
       if (overlay) overlay.classList.remove("active");
-      try { if (TV && TV.setScreenOff) TV.setScreenOff(false); } catch (e) {}
+      try { if (TV && TV.setScreenOff) TV.setScreenOff(false); } catch (e) { }
       paintFocus();
     }
     sceneVideos(!screenOffActive);
@@ -1766,7 +1771,7 @@
           else if (parts[i].type === "minute") m = parseInt(parts[i].value, 10);
         }
       }
-    } catch (e) {}
+    } catch (e) { }
     if (typeof h !== "number" || isNaN(h) || typeof m !== "number" || isNaN(m)) {
       var d = new Date(); h = d.getHours(); m = d.getMinutes();
     }
@@ -1811,9 +1816,9 @@
     } else if (act === "tv_off") {
       var sndPlaying = window.Soundscape && window.Soundscape.current && window.Soundscape.current() !== "off";
       if (sndPlaying && !sleepEnds) { setIdleAmbient(true); return; }
-      if (sleepEnds && !OFFLINE) api("POST", "/api/sleep", { minutes: 0 }).catch(function () {});
-      if (TV && TV.powerOff) { try { TV.powerOff(); return; } catch (e) {} }
-      if (!OFFLINE) api("POST", "/api/key", { key: "power" }).catch(function () {});
+      if (sleepEnds && !OFFLINE) api("POST", "/api/sleep", { minutes: 0 }).catch(function () { });
+      if (TV && TV.powerOff) { try { TV.powerOff(); return; } catch (e) { } }
+      if (!OFFLINE) api("POST", "/api/key", { key: "power" }).catch(function () { });
     } else {
       setIdleAmbient(true);
     }
@@ -1839,7 +1844,7 @@
     try {
       if (TV && TV.tvInputs) return JSON.parse(TV.tvInputs()) || [];
       if (window.MOCK_INPUTS) return window.MOCK_INPUTS;
-    } catch (e) {}
+    } catch (e) { }
     return [];
   }
   function openInputMenu(list) {
@@ -1882,7 +1887,7 @@
     if (!it) return;
     if (it.act === "input") {
       var done = false;
-      try { done = !!(TV && TV.openInput && TV.openInput(it.id)); } catch (e) {}
+      try { done = !!(TV && TV.openInput && TV.openInput(it.id)); } catch (e) { }
       if (!done) note(window.MOCK_INPUTS ? t("opening", { title: it.label }) : t("no_inputs"));
       return;
     }
@@ -1892,7 +1897,7 @@
   function openSettingsScreen(which) {
     if (nativeSettingsScreen()) {
       var ok = false;
-      try { ok = !!TV.openSettingsScreen(which); } catch (e) {}
+      try { ok = !!TV.openSettingsScreen(which); } catch (e) { }
       if (ok) return;
     }
     if (ON_TV && !OFFLINE) api("POST", "/api/launch", { app: which }).catch(function (e) { note(tBridge(e.key, e.vars, e.message)); });
@@ -1900,13 +1905,13 @@
   // The TV's own screensaver (Google TV's Ambient mode: the Google Photos albums are chosen there).
   function startScreensaver() {
     var ok = false;
-    try { ok = !!(TV && TV.startScreensaver && TV.startScreensaver()); } catch (e) {}
+    try { ok = !!(TV && TV.startScreensaver && TV.startScreensaver()); } catch (e) { }
     if (!ok) note(t("no_screensaver"));
   }
   // Google TV's own Ambient mode settings: where the source and the Google Photos albums are picked.
   function openAmbientSettings() {
     var ok = false;
-    try { ok = !!(TV && TV.openAmbientSettings && TV.openAmbientSettings()); } catch (e) {}
+    try { ok = !!(TV && TV.openAmbientSettings && TV.openAmbientSettings()); } catch (e) { }
     if (!ok) { SET.msg = t("no_screensaver"); renderSettings(); }
   }
   function quickAction() {
@@ -1927,7 +1932,7 @@
   // its /api/launch, and the bridge with a fixed ADB command (POST /api/bluetooth-audio, no body).
   function openBluetoothScreen() {
     if (TV && TV.openSettingsScreen) {
-      try { TV.openSettingsScreen("bluetooth"); return; } catch (e) {}
+      try { TV.openSettingsScreen("bluetooth"); return; } catch (e) { }
     }
     if (OFFLINE) { note(t("quick_needs_bridge")); return; }
     if (ON_TV) { openSettingsScreen("bluetooth"); return; }
@@ -1938,7 +1943,7 @@
   function refreshQuick() {
     var jobs = [];
     if (QUICK.indexOf("sleep") >= 0) {
-      jobs.push(api("GET", "/api/sleep").then(function (j) { sleepEnds = j.ends ? Date.parse(j.ends) : null; }, function () {}));
+      jobs.push(api("GET", "/api/sleep").then(function (j) { sleepEnds = j.ends ? Date.parse(j.ends) : null; }, function () { }));
     }
     if (QUICK.indexOf("picture") >= 0) {
       jobs.push(api("GET", "/api/picture").then(function (j) {
@@ -2016,8 +2021,8 @@
   function pickWho(id) {
     if (id === who) return;
     who = id; s = 0;
-    try { localStorage.setItem("tvhome.who", who); } catch (e) {}
-    if (!NOBODY) api("POST", "/api/who", { who: who }).catch(function () {});
+    try { localStorage.setItem("tvhome.who", who); } catch (e) { }
+    if (!NOBODY) api("POST", "/api/who", { who: who }).catch(function () { });
     renderShelf();
     kidSync();
   }
@@ -2034,10 +2039,10 @@
       if (first || w === who) return;   // the first answer only sets the baseline
       if (!PEOPLE.some(function (p) { return p.id === w; })) return;
       who = w; s = 0;
-      try { localStorage.setItem("tvhome.who", who); } catch (e) {}
+      try { localStorage.setItem("tvhome.who", who); } catch (e) { }
       renderShelf();
       kidSync();
-    }, function () {});
+    }, function () { });
   }
 
   // ---------------- kids mode (kids.js, docs/CONFIG.md "Kids mode") ----------------
@@ -2074,8 +2079,8 @@
     touched = true;
     if (grown) {
       who = grown.id; s = 0;
-      try { localStorage.setItem("tvhome.who", who); } catch (e) {}
-      if (!OFFLINE) api("POST", "/api/who", { who: who, pin: code }).catch(function () {});
+      try { localStorage.setItem("tvhome.who", who); } catch (e) { }
+      if (!OFFLINE) api("POST", "/api/who", { who: who, pin: code }).catch(function () { });
     } else {
       window.KidsMode.stayUnlocked(kid.id);
     }
@@ -2111,7 +2116,7 @@
     keep("tvhome.people.order", { ids: ids, pending: true });
     if (OFFLINE || data.bridge === false) return;
     api("POST", "/api/people", { order: ids })
-      .then(function () { keep("tvhome.people.order", { ids: ids, pending: false }); }, function () {});
+      .then(function () { keep("tvhome.people.order", { ids: ids, pending: false }); }, function () { });
   }
   function dropPeople() {
     plift = false;
@@ -2388,7 +2393,7 @@
     var payload = { apps: arr.items.map(function (it) { return { package: it.package, name: it.name }; }), line: arr.line };
     var key = JSON.stringify(payload);
     if (key === reported) return;
-    api("POST", "/api/home-apps", payload).then(function () { reported = key; }, function () {});
+    api("POST", "/api/home-apps", payload).then(function () { reported = key; }, function () { });
   }
 
   // ---------------- moving apps with the TV remote ----------------
@@ -2407,7 +2412,7 @@
     save();
     if (OFFLINE || data.bridge === false) return;
     api("POST", "/api/app-order", { order: o.packages, line: o.line })
-      .then(function () { local.pending = false; keep("tvhome.order.tv", local); }, function () {});
+      .then(function () { local.pending = false; keep("tvhome.order.tv", local); }, function () { });
   }
   function nameOf(pkg) {
     var it = arrangeItems().items.filter(function (x) { return x.package === pkg; })[0];
@@ -2486,8 +2491,8 @@
       flash(t("ctx_hidden"));
       return;
     }
-    if (it.act === "uninstall") { try { TV.uninstall(a.package); } catch (e) {} paintFocus(); return; }
-    if (it.act === "info") { try { TV.appInfo(a.package); } catch (e) {} paintFocus(); return; }
+    if (it.act === "uninstall") { try { TV.uninstall(a.package); } catch (e) { } paintFocus(); return; }
+    if (it.act === "info") { try { TV.appInfo(a.package); } catch (e) { } paintFocus(); return; }
     paintFocus();
   }
 
@@ -2768,7 +2773,7 @@
 
   // ---------------- focus ----------------
   function clearFocus() {
-    shelfEls.concat(gridEls, quickEls).forEach(function (el) { if (el) el.classList.remove("focus"); });
+    shelfEls.concat(gridEls, quickEls, haDevEls).forEach(function (el) { if (el) el.classList.remove("focus"); });
     $("people").classList.remove("focus");
     Array.prototype.forEach.call($("people").children, function (el) { el.classList.remove("focus"); });
   }
@@ -2787,7 +2792,128 @@
     track.style.transform = "translateX(" + (rtl ? (first * step) : (-first * step)) + "px)";
   }
 
+  function scrollHaDevicesShelf() {
+    var track = $("ha-devices-track");
+    if (!track) return;
+    var el = haDevEls[haDevI];
+    if (!el) { track.style.transform = ""; return; }
+    var step = el.offsetWidth + parseFloat(getComputedStyle(track).columnGap || 0);
+    var fit = Math.max(1, Math.floor((track.parentNode.clientWidth + step - el.offsetWidth) / step));
+    var first = NIGHT ? haDevI - fit + 1 : haDevI - 2;
+    first = Math.max(0, Math.min(first, haDevEls.length - fit));
+    var rtl = document.documentElement.dir === "rtl";
+    track.style.transform = "translateX(" + (rtl ? (first * step) : (-first * step)) + "px)";
+  }
+
   function shelfOn() { return !$("shelf-section").classList.contains("empty"); }
+  function haDevicesOn() { return $("ha-devices-section") && $("ha-devices-section").classList.contains("on") && haDevItems.length > 0; }
+
+  // Icons for home assistant domains
+  var HA_ICONS = {
+    light: '<svg viewBox="0 0 24 24"><path d="M12 2a6 6 0 0 0-6 6c0 2.22 1.21 4.16 3 5.2V16a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-2.8c1.79-1.04 3-2.98 3-5.2a6 6 0 0 0-6-6zm-2 16v1a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2v-1h-4z"/></svg>',
+    switch: '<svg viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0 0 10h10a5 5 0 0 0 0-10zm0 8a3 3 0 1 1 3-3 3 3 0 0 1-3 3z"/></svg>',
+    fan: '<svg viewBox="0 0 24 24"><path d="M12 11a1 1 0 1 0 1 1 1 1 0 0 0-1-1zm6-6.5a4.5 4.5 0 0 0-4.5 4.5v1.2a3 3 0 0 0-2.2 2.2H10.1A4.5 4.5 0 0 0 5.6 8 4.5 4.5 0 0 0 1 12.5a4.5 4.5 0 0 0 4.5 4.5h1.2a3 3 0 0 0 2.2 2.2v1.2A4.5 4.5 0 0 0 13.4 25a4.5 4.5 0 0 0 4.5-4.5v-1.2a3 3 0 0 0 2.2-2.2h1.2A4.5 4.5 0 0 0 26 12.5 4.5 4.5 0 0 0 21.5 8h-1.2a3 3 0 0 0-2.2-2.2V4.5A4.5 4.5 0 0 0 18 4.5z"/></svg>',
+    climate: '<svg viewBox="0 0 24 24"><path d="M12 2a4 4 0 0 0-4 4v7.26a6 6 0 1 0 8 0V6a4 4 0 0 0-4-4zm0 18a4 4 0 0 1-2.5-7.13 1 1 0 0 0 .5-.87V6a2 2 0 1 1 4 0v6a1 1 0 0 0 .5.87A4 4 0 0 1 12 20z"/></svg>',
+    cover: '<svg viewBox="0 0 24 24"><path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 2v3H5V5h14zm0 5v3H5v-3h14zm-14 9v-4h14v4H5z"/></svg>',
+    scene: '<svg viewBox="0 0 24 24"><path d="M12 3.5l2.4 5 5.4.6-4 3.7 1.1 5.4L12 15.5l-4.9 2.7 1.1-5.4-4-3.7 5.4-.6z"/></svg>',
+    script: '<svg viewBox="0 0 24 24"><path d="M8 5.5l11 6.5-11 6.5z"/></svg>',
+    media_player: '<svg viewBox="0 0 24 24"><path d="M21 3H3a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h5v2h8v-2h5a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 14H3V5h18v12zM10 8v6l5-3z"/></svg>',
+    input_boolean: '<svg viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0 0 10h10a5 5 0 0 0 0-10zm0 8a3 3 0 1 1 3-3 3 3 0 0 1-3 3z"/></svg>'
+  };
+
+  function renderHaDevicesShelf() {
+    var sec = $("ha-devices-section");
+    var track = $("ha-devices-track");
+    if (!sec || !track) return;
+    var rawDevices = getHaDevices();
+    var hidden = Array.isArray(ST.ha_hidden) ? ST.ha_hidden : [];
+    haDevItems = rawDevices.filter(function (d) { return hidden.indexOf(d.entity_id) < 0; });
+
+    if (!haDevItems.length) {
+      sec.classList.remove("on");
+      sec.style.display = "none";
+      document.documentElement.classList.remove("has-both-shelves");
+      haDevEls = [];
+      return;
+    }
+
+    sec.classList.add("on");
+    sec.style.display = "block";
+    $("ha-devices-title").textContent = t("ha_devices_title");
+
+    if (shelfOn()) {
+      document.documentElement.classList.add("has-both-shelves");
+    } else {
+      document.documentElement.classList.remove("has-both-shelves");
+    }
+
+    track.innerHTML = haDevItems.map(function (d) {
+      var isStateOn = d.state === "on" || d.state === "playing" || d.state === "open";
+      var iconSvg = HA_ICONS[d.domain] || HA_ICONS.switch;
+      var stateText = d.state || "off";
+      return '<div class="hacard' + (isStateOn ? " on" : "") + '" role="button" data-entity="' + esc(d.entity_id) + '">' +
+        '<div class="ha-icon">' + iconSvg + '</div>' +
+        '<div class="ha-info">' +
+        '<span class="ha-name">' + esc(d.name || d.entity_id) + '</span>' +
+        '<span class="ha-state">' + esc(stateText) + '</span>' +
+        '</div>' +
+        '</div>';
+    }).join("");
+
+    haDevEls = Array.prototype.slice.call(track.children);
+    haDevEls.forEach(function (el, i) {
+      el.addEventListener("click", function () {
+        haDevI = i;
+        zone = "hadevices";
+        paintFocus();
+        toggleHaDeviceFromShelf();
+      });
+    });
+  }
+
+  function toggleHaDeviceFromShelf() {
+    var dev = haDevItems[haDevI];
+    if (!dev) return;
+    var base = ST.ha_url || "";
+    var token = ST.ha_token || "";
+    if (!base) {
+      toast(t("sh_down"));
+      return;
+    }
+    var domain = dev.domain || dev.entity_id.split(".")[0];
+    var service = "toggle";
+    if (domain === "scene" || domain === "script") {
+      service = "turn_on";
+    }
+    var apiUrl = base + "/api/services/" + domain + "/" + service;
+    var headers = { "Content-Type": "application/json" };
+    if (token) headers["Authorization"] = "Bearer " + token;
+
+    // Optimistic local state toggle
+    var nextState = (dev.state === "on") ? "off" : "on";
+    if (domain !== "scene" && domain !== "script") {
+      dev.state = nextState;
+      var card = haDevEls[haDevI];
+      if (card) {
+        card.classList.toggle("on", nextState === "on");
+        var stateEl = card.querySelector(".ha-state");
+        if (stateEl) stateEl.textContent = nextState;
+      }
+    }
+
+    fetch(apiUrl, {
+      method: "POST",
+      headers: headers,
+      body: JSON.stringify({ entity_id: dev.entity_id })
+    }).then(function (res) {
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      return res.json();
+    }).then(function () {
+      saveSettings();
+    }).catch(function (err) {
+      toast(t("ha_import_failed", { err: err.message || err }));
+    });
+  }
   // the switcher shows for two or more people, also while nobody has anything yet (issue #23)
   function peopleOn() { return peopleCount() >= 2; }
   function toPeople() { zone = "people"; pi = whoIndex(); }
@@ -2905,6 +3031,12 @@
       setBg(data.shows[s].backdrop || data.shows[s].poster, true);
       hero(data.shows[s]);
       $("place").style.visibility = "hidden";
+    } else if (zone === "hadevices" && haDevEls[haDevI]) {
+      haDevEls[haDevI].classList.add("focus");
+      scrollHaDevicesShelf();
+      hero(null);
+      $("place").style.visibility = "";
+      showPhoto();
     } else {
       zone = "grid";
       g = Math.max(0, Math.min(g, gridEls.length - 1));
@@ -3017,19 +3149,42 @@
       if (dx < 0 && s === 0 && NIGHT && npReach()) { zone = "np"; npI = Math.max(0, npButtons().length - 1); }
       else if (dx) s = Math.max(0, Math.min(shelfEls.length - 1, s + dx));
       else if (dy < 0) { if (peopleOn()) toPeople(); else if (!NIGHT && npReach()) zone = "np"; else if (hasQuick()) { zone = "quick"; qi = 0; } }
-      else if (dy > 0 && gridEls.length) {
-        // land on the app under the show
-        var b = shelfEls[s].getBoundingClientRect();
-        g = nearestInRow(0, b.left + b.width / 2);
+      else if (dy > 0) {
+        if (haDevicesOn()) {
+          zone = "hadevices";
+          haDevI = Math.min(haDevI, haDevEls.length - 1);
+        } else if (gridEls.length) {
+          var b = shelfEls[s].getBoundingClientRect();
+          g = nearestInRow(0, b.left + b.width / 2);
+          zone = "grid";
+        }
+      }
+    } else if (zone === "hadevices") {
+      if (dx) haDevI = Math.max(0, Math.min(haDevEls.length - 1, haDevI + dx));
+      else if (dy < 0) {
+        if (cards.length) zone = "shelf";
+        else if (peopleOn()) toPeople();
+        else if (!NIGHT && npReach()) zone = "np";
+        else if (hasQuick()) { zone = "quick"; qi = 0; }
+      } else if (dy > 0 && gridEls.length) {
         zone = "grid";
+        g = Math.min(g, gridEls.length - 1);
       }
     } else {
       var row = Math.floor(g / GRID_COLS), lastRow = Math.floor((gridEls.length - 1) / GRID_COLS);
-      if (dx) {
-        var nx = g + dx;
-        if (nx >= 0 && nx < gridEls.length && Math.floor(nx / GRID_COLS) === row) g = nx;
+      if (dx && gridEls.length) {
+        // More apps: left/right run through every app line by line and wrap from the last to
+        // the first; the dock (one row): they wrap within the row (#167).
+        var n = gridEls.length;
+        if (expanded) g = (g + dx + n) % n;
+        else {
+          var first = row * GRID_COLS, last = Math.min(n, first + GRID_COLS) - 1;
+          var nx = g + dx;
+          g = nx > last ? first : nx < first ? last : nx;
+        }
       } else if (dy < 0 && row === 0) {
-        if (cards.length) zone = "shelf";
+        if (haDevicesOn()) zone = "hadevices";
+        else if (cards.length) zone = "shelf";
         else if (npReach()) {
           if (AMBIENT_MUSIC && music) {
             ambientOpen = true;
@@ -3157,16 +3312,16 @@
     clearTimeout(focusSaveTimer); focusSaveTimer = 0;
     if (!focusRestored && !touched) return;   // a page not drawn yet must not overwrite what it is about to restore
     if (zone !== "shelf" && zone !== "grid") return;   // menus and settings are not worth coming back to
-    try { localStorage.setItem(FOCUS_KEY, JSON.stringify({ t: Date.now(), zone: zone, s: s, g: g, key: zone === "grid" ? gridKey(gridItems[g]) : "" })); } catch (e) {}
+    try { localStorage.setItem(FOCUS_KEY, JSON.stringify({ t: Date.now(), zone: zone, s: s, g: g, key: zone === "grid" ? gridKey(gridItems[g]) : "" })); } catch (e) { }
   }
   function saveFocusSoon() { if (!focusSaveTimer) focusSaveTimer = setTimeout(saveFocusNow, 500); }
-  function forgetFocus() { clearTimeout(focusSaveTimer); focusSaveTimer = 0; try { localStorage.removeItem(FOCUS_KEY); } catch (e) {} }
+  function forgetFocus() { clearTimeout(focusSaveTimer); focusSaveTimer = 0; try { localStorage.removeItem(FOCUS_KEY); } catch (e) { } }
   // First draw of a fresh page only: true when the last focus was put back.
   function restoreFocus() {
     if (focusRestored) return false;
     focusRestored = true;
     var saved = null;
-    try { saved = JSON.parse(localStorage.getItem(FOCUS_KEY) || "null"); } catch (e) {}
+    try { saved = JSON.parse(localStorage.getItem(FOCUS_KEY) || "null"); } catch (e) { }
     var f = pickFocus(saved, Date.now(), shelfEls.length, gridItems.map(gridKey));
     if (!f) return false;
     zone = f.zone; s = f.s; g = f.g;
@@ -3251,6 +3406,7 @@
       return;
     }
     if (zone === "quick") { quickAction(); return; }
+    if (zone === "hadevices") { toggleHaDeviceFromShelf(); return; }
     if (zone === "people") {
       if (isHead()) { openPop(); paintFocus(); return; }
       pickWho(PEOPLE[pi].id);
@@ -3284,7 +3440,7 @@
     if (a.kind === "devmode") { openDevMode(); return; }
     if (a.kind === "input") {
       var done = false;
-      if (TV && TV.openInput) { try { done = !!TV.openInput(a.id); } catch (e) {} }
+      if (TV && TV.openInput) { try { done = !!TV.openInput(a.id); } catch (e) { } }
       if (!done && !OFFLINE) {
         api("POST", "/api/key", { key: "input" }).catch(function (e) { status(tBridge(e.key, e.vars, e.message)); });
       } else if (!done) {
@@ -3354,7 +3510,7 @@
     closeGear();
     paintFocus();
     var done = false;
-    try { done = !!(TV && ((TV.launch && TV.launch(SETTINGS_PKG)) || (TV.openSettings && TV.openSettings()))); } catch (e) {}
+    try { done = !!(TV && ((TV.launch && TV.launch(SETTINGS_PKG)) || (TV.openSettings && TV.openSettings()))); } catch (e) { }
     if (done) return;
     if (OFFLINE) { status(t("tv_settings_none")); return; }
     api("POST", "/api/launch", { app: "settings" }).catch(function () { status(t("tv_settings_none")); });
@@ -3368,9 +3524,11 @@
   // also on the computer (/api/settings), so the phone and the TV agree.
   var ST_KEY = "tvhome.settings";
   var SECS = [["language", "globe"], ["location", "pin"], ["weather", "cloud"], ["look", "look"],
-    ["apps", "apps"], ["people", "person"], ["quick", "bolt"], ["about", "info"]];
-  var SET = { col: "secs", sec: 0, ri: 0, keyFocus: null, sub: null, lift: null, confirm: null, dirty: false, typing: null,
-    msg: "", geo: { q: "", list: null, busy: false, err: false } };
+  ["apps", "apps"], ["ha_devices", "homeassistant"], ["people", "person"], ["quick", "bolt"], ["about", "info"]];
+  var SET = {
+    col: "secs", sec: 0, ri: 0, keyFocus: null, sub: null, lift: null, confirm: null, dirty: false, typing: null,
+    msg: "", geo: { q: "", list: null, busy: false, err: false }
+  };
   var REPO_URL = "github.com/Seagey/couch-tv";
   var WX_DEFAULT = { lat: -33.8688, lon: 151.2093, place: "Sydney", timezone: "Australia/Sydney" };
   var pushTimer = null;
@@ -3386,7 +3544,7 @@
   }
   function pushSettings(rec) {
     return api("POST", "/api/settings", { settings: rec.s })
-      .then(function () { rec.pending = false; keep(ST_KEY, rec); }, function () {});
+      .then(function () { rec.pending = false; keep(ST_KEY, rec); }, function () { });
   }
   // Kept on this TV straight away; handed to the bridge a moment later (pending until it has it).
   function saveSettings() {
@@ -3467,6 +3625,7 @@
     if (id === "weather") return weatherRows();
     if (id === "look") return lookRows();
     if (id === "apps") return appsRows();
+    if (id === "ha_devices") return haDevicesSettingsRows();
     if (id === "people") return peopleRows();
     if (id === "quick") return quickRows();
     return aboutRows();
@@ -3475,10 +3634,12 @@
   function languageRows() {
     var L = window.I18N;
     var rows = L ? L.langs.map(function (l) {
-      return { kind: "choice", key: "lang:" + l.id, label: l.name, lang: l.locale, checked: L.lang() === l.id, act: function () {
-        ST.lang = l.id; L.set(l.id); saveSettings(); staticText();
-        if (CLOCK24 !== clock24()) { CLOCK24 = !CLOCK24; glassShown = ""; clock(); }
-      } };
+      return {
+        kind: "choice", key: "lang:" + l.id, label: l.name, lang: l.locale, checked: L.lang() === l.id, act: function () {
+          ST.lang = l.id; L.set(l.id); saveSettings(); staticText();
+          if (CLOCK24 !== clock24()) { CLOCK24 = !CLOCK24; glassShown = ""; clock(); }
+        }
+      };
     }) : [];
     rows.push(info("lang-note", t("lang_note")));
     return rows;
@@ -3489,27 +3650,35 @@
   function locationRows() {
     var geo = SET.geo;
     var rows = [info("loc-now", t("loc_now"), WXCFG.place || t("loc_unset"), WXCFG.timezone && WXCFG.timezone !== "auto" ? WXCFG.timezone : "")];
-    rows.push({ kind: "input", key: "loc-search", label: t("loc_search"), value: geo.q, act: function () {
-      startTyping({ label: t("loc_type"), value: geo.q, search: true,
-        live: function (q) { findPlaces(q, false); }, submit: function (q) { findPlaces(q, true); } });
-    } });
+    rows.push({
+      kind: "input", key: "loc-search", label: t("loc_search"), value: geo.q, act: function () {
+        startTyping({
+          label: t("loc_type"), value: geo.q, search: true,
+          live: function (q) { findPlaces(q, false); }, submit: function (q) { findPlaces(q, true); }
+        });
+      }
+    });
     if (geo.busy) rows.push(info("loc-busy", t("loc_searching")));
     else if (geo.err) rows.push(info("loc-err", t("loc_error")));
     else if (geo.list && !geo.list.length) rows.push(info("loc-none", t("loc_none", { q: geo.q })));
     if (geo.list && geo.list.length) {
       rows.push(head(t("loc_results")));
       geo.list.forEach(function (p, i) {
-        rows.push({ kind: "choice", key: "place:" + i, label: p.name, sub: p.area,
-          checked: !!(ST.place && ST.place.lat === p.lat && ST.place.lon === p.lon), act: function () { choosePlace(p); } });
+        rows.push({
+          kind: "choice", key: "place:" + i, label: p.name, sub: p.area,
+          checked: !!(ST.place && ST.place.lat === p.lat && ST.place.lon === p.lon), act: function () { choosePlace(p); }
+        });
       });
     }
     if (ST.place) {
-      rows.push({ kind: "action", key: "loc-reset", label: t("loc_reset"), act: function () {
-        delete ST.place;
-        WXCFG = CFG.weather || WX_DEFAULT;
-        saveSettings();
-        SET.msg = t("loc_set", { place: WXCFG.place || "" });
-      } });
+      rows.push({
+        kind: "action", key: "loc-reset", label: t("loc_reset"), act: function () {
+          delete ST.place;
+          WXCFG = CFG.weather || WX_DEFAULT;
+          saveSettings();
+          SET.msg = t("loc_set", { place: WXCFG.place || "" });
+        }
+      });
     }
     rows.push(info("loc-note", t("loc_note")));
     return rows;
@@ -3536,8 +3705,10 @@
       });
       return out.slice(0, 10).map(function (r) {
         // two decimals is about a kilometre: the town, never the house
-        return { name: r.name, area: placeArea(r, home),
-          lat: Math.round(r.latitude * 100) / 100, lon: Math.round(r.longitude * 100) / 100, timezone: r.timezone || "auto" };
+        return {
+          name: r.name, area: placeArea(r, home),
+          lat: Math.round(r.latitude * 100) / 100, lon: Math.round(r.longitude * 100) / 100, timezone: r.timezone || "auto"
+        };
       });
     });
   }
@@ -3592,26 +3763,36 @@
   // ---- weather ----
   function weatherRows() {
     return [
-      { kind: "toggle", key: "wx-show", label: t("wx_show"), value: WX_SHOW ? t("on") : t("off"), act: function () {
-        WX_SHOW = !WX_SHOW; ST.wx_show = WX_SHOW; saveSettings();
-        if (WX_SHOW) refreshWeather();
-        else updateAmbientWeather();
-        clock();
-      } },
-      { kind: "toggle", key: "wx-ambient", label: t("wx_ambient"), sub: t("wx_ambient_sub"), value: WX_AMBIENT ? t("on") : t("off"), act: function () {
-        WX_AMBIENT = !WX_AMBIENT; ST.ambient_weather = WX_AMBIENT; saveSettings();
-        ambientSync();
-      } },
-      { kind: "toggle", key: "wx-sun-grade", label: t("wx_sun_grade"), sub: t("wx_sun_grade_sub"), value: WX_SUN_GRADE ? t("on") : t("off"), act: function () {
-        WX_SUN_GRADE = !WX_SUN_GRADE; ST.ambient_sun_grade = WX_SUN_GRADE; saveSettings();
-        ambientSync();
-      } },
-      { kind: "cycle", key: "wx-unit", label: t("wx_units"), value: WX_F ? "°F (Fahrenheit)" : "°C (Celsius)", act: function () {
-        WX_F = !WX_F; ST.wx_unit = WX_F ? "f" : "c"; saveSettings(); clock();
-      } },
-      { kind: "cycle", key: "wx-every", label: t("wx_every"), value: t("every_min", { n: WX_EVERY }), act: function () {
-        WX_EVERY = WX_EVERY === 15 ? 30 : WX_EVERY === 30 ? 60 : 15; ST.wx_every = WX_EVERY; saveSettings();
-      } },
+      {
+        kind: "toggle", key: "wx-show", label: t("wx_show"), value: WX_SHOW ? t("on") : t("off"), act: function () {
+          WX_SHOW = !WX_SHOW; ST.wx_show = WX_SHOW; saveSettings();
+          if (WX_SHOW) refreshWeather();
+          else updateAmbientWeather();
+          clock();
+        }
+      },
+      {
+        kind: "toggle", key: "wx-ambient", label: t("wx_ambient"), sub: t("wx_ambient_sub"), value: WX_AMBIENT ? t("on") : t("off"), act: function () {
+          WX_AMBIENT = !WX_AMBIENT; ST.ambient_weather = WX_AMBIENT; saveSettings();
+          ambientSync();
+        }
+      },
+      {
+        kind: "toggle", key: "wx-sun-grade", label: t("wx_sun_grade"), sub: t("wx_sun_grade_sub"), value: WX_SUN_GRADE ? t("on") : t("off"), act: function () {
+          WX_SUN_GRADE = !WX_SUN_GRADE; ST.ambient_sun_grade = WX_SUN_GRADE; saveSettings();
+          ambientSync();
+        }
+      },
+      {
+        kind: "cycle", key: "wx-unit", label: t("wx_units"), value: WX_F ? "°F (Fahrenheit)" : "°C (Celsius)", act: function () {
+          WX_F = !WX_F; ST.wx_unit = WX_F ? "f" : "c"; saveSettings(); clock();
+        }
+      },
+      {
+        kind: "cycle", key: "wx-every", label: t("wx_every"), value: t("every_min", { n: WX_EVERY }), act: function () {
+          WX_EVERY = WX_EVERY === 15 ? 30 : WX_EVERY === 30 ? 60 : 15; ST.wx_every = WX_EVERY; saveSettings();
+        }
+      },
       info("wx-provider", t("wx_provider"), "Open-Meteo", t("wx_provider_note")),
       info("wx-night", t("wx_night_only"))
     ];
@@ -3622,19 +3803,25 @@
   function lookRows() {
     var look = lookSetting(), st = sceneState(), rows = [head(t("look_head"))];
     ["night", "oled", "classic"].forEach(function (id) {
-      rows.push({ kind: "choice", key: "look:" + id, label: t("look_" + id), sub: t("look_" + id + "_sub"), checked: look === id,
-        act: function () { ST.look = id; keep("tvhome.look", id); saveSettings(); } });
+      rows.push({
+        kind: "choice", key: "look:" + id, label: t("look_" + id), sub: t("look_" + id + "_sub"), checked: look === id,
+        act: function () { ST.look = id; keep("tvhome.look", id); saveSettings(); }
+      });
     });
     if (look === "classic") {
-      rows.push({ kind: "toggle", key: "keep-photo", label: t("keep_photo"), sub: t("keep_photo_sub"), value: KEEP_PHOTO ? t("on") : t("off"), act: function () {
-        KEEP_PHOTO = !KEEP_PHOTO; ST.keep_photo = KEEP_PHOTO;
-        if (KEEP_PHOTO) { var cl = classicPhotos(); ST.keep_photo_pick = photoKey(cl[photo % cl.length]); }
-        saveSettings(); showPhoto();
-      } });
-      if (KEEP_PHOTO) rows.push({ kind: "cycle", key: "keep-photo-pick", label: t("keep_photo_pick"), value: t("photo_n_of", { n: (photo % classicPhotos().length) + 1, total: classicPhotos().length }), act: function () {
-        var cl = classicPhotos(); photo = (photo + 1) % cl.length;
-        ST.keep_photo_pick = photoKey(cl[photo]); saveSettings(); showPhoto();
-      } });
+      rows.push({
+        kind: "toggle", key: "keep-photo", label: t("keep_photo"), sub: t("keep_photo_sub"), value: KEEP_PHOTO ? t("on") : t("off"), act: function () {
+          KEEP_PHOTO = !KEEP_PHOTO; ST.keep_photo = KEEP_PHOTO;
+          if (KEEP_PHOTO) { var cl = classicPhotos(); ST.keep_photo_pick = photoKey(cl[photo % cl.length]); }
+          saveSettings(); showPhoto();
+        }
+      });
+      if (KEEP_PHOTO) rows.push({
+        kind: "cycle", key: "keep-photo-pick", label: t("keep_photo_pick"), value: t("photo_n_of", { n: (photo % classicPhotos().length) + 1, total: classicPhotos().length }), act: function () {
+          var cl = classicPhotos(); photo = (photo + 1) % cl.length;
+          ST.keep_photo_pick = photoKey(cl[photo]); saveSettings(); showPhoto();
+        }
+      });
     }
     rows.push(head(t("scenes_head")));
     rows.push(info("photos-count-look", photoCountText()));
@@ -3642,61 +3829,83 @@
       var sc = sceneById(id);
       if (!sc) return;
       var label = sc.own ? t("scene_photo", { n: sc.n }) : sc.mine ? sc.name || t("scene_mine", { n: sc.n }) : t("scene_" + id);
-      rows.push({ kind: "check", key: "scene:" + id, label: label,
+      rows.push({
+        kind: "check", key: "scene:" + id, label: label,
         thumb: sc.own ? sc.src : "backgrounds/" + sc.photo + ".jpg", checked: st.off.indexOf(id) < 0,
-        act: function () { toggleScene(id); }, move: function (d) { moveScene(id, d); } });
+        act: function () { toggleScene(id); }, move: function (d) { moveScene(id, d); }
+      });
     });
-    rows.push({ kind: "toggle", key: "sun-sync", label: t("sun_sync"), sub: t("sun_sync_sub"), value: SUN_SYNC ? t("on") : t("off"), act: function () {
-      SUN_SYNC = !SUN_SYNC; ST.sun_sync = SUN_SYNC; saveSettings(); if (SUN_SYNC) applySunSync();
-    } });
+    rows.push({
+      kind: "toggle", key: "sun-sync", label: t("sun_sync"), sub: t("sun_sync_sub"), value: SUN_SYNC ? t("on") : t("off"), act: function () {
+        SUN_SYNC = !SUN_SYNC; ST.sun_sync = SUN_SYNC; saveSettings(); if (SUN_SYNC) applySunSync();
+      }
+    });
     var secs = Math.round(SCENE_MS / 1000);
-    rows.push({ kind: "cycle", key: "scene-secs", label: t("scene_secs"), value: t("n_secs", { n: secs }), act: function () {
-      var i = SECS_STEPS.indexOf(secs), n = i < 0 ? 20 : SECS_STEPS[(i + 1) % SECS_STEPS.length];
-      ST.scene_seconds = n; SCENE_MS = n * 1000; saveSettings();
-    } });
-    rows.push({ kind: "cycle", key: "clock", label: t("clock"), value: CLOCK24 ? t("clock_24") : t("clock_12"), act: function () {
-      CLOCK24 = !CLOCK24; ST.clock = CLOCK24 ? "24h" : "12h"; saveSettings(); glassShown = ""; clock();
-    } });
-    rows.push({ kind: "cycle", key: "idle-photo-seconds", label: t("idle_photo"), sub: t("idle_photo_sub"),
+    rows.push({
+      kind: "cycle", key: "scene-secs", label: t("scene_secs"), value: t("n_secs", { n: secs }), act: function () {
+        var i = SECS_STEPS.indexOf(secs), n = i < 0 ? 20 : SECS_STEPS[(i + 1) % SECS_STEPS.length];
+        ST.scene_seconds = n; SCENE_MS = n * 1000; saveSettings();
+      }
+    });
+    rows.push({
+      kind: "cycle", key: "clock", label: t("clock"), value: CLOCK24 ? t("clock_24") : t("clock_12"), act: function () {
+        CLOCK24 = !CLOCK24; ST.clock = CLOCK24 ? "24h" : "12h"; saveSettings(); glassShown = ""; clock();
+      }
+    });
+    rows.push({
+      kind: "cycle", key: "idle-photo-seconds", label: t("idle_photo"), sub: t("idle_photo_sub"),
       value: IDLE_PHOTO_SECONDS ? t("n_secs", { n: IDLE_PHOTO_SECONDS }) : t("off"), act: function () {
         var i = IDLE_PHOTO_STEPS.indexOf(IDLE_PHOTO_SECONDS);
         IDLE_PHOTO_SECONDS = IDLE_PHOTO_STEPS[(i + 1) % IDLE_PHOTO_STEPS.length];
         ST.idle_photo_seconds = IDLE_PHOTO_SECONDS; saveSettings(); resetIdlePhoto();
-      } });
+      }
+    });
     // the TV's own screensaver (Google TV's Ambient mode) and the albums it shows
     rows.push(head(t("ambient_head")));
-    rows.push({ kind: "action", key: "ambient", label: t("ambient_settings"), sub: t("ambient_settings_sub"),
-      act: function () { openAmbientSettings(); } });
+    rows.push({
+      kind: "action", key: "ambient", label: t("ambient_settings"), sub: t("ambient_settings_sub"),
+      act: function () { openAmbientSettings(); }
+    });
     // Smart Idle & OLED-safe Ambient Mode
     rows.push(head(t("smart_idle_head")));
-    rows.push({ kind: "toggle", key: "smart-idle-on", label: t("smart_idle_on"), sub: t("smart_idle_on_sub"),
+    rows.push({
+      kind: "toggle", key: "smart-idle-on", label: t("smart_idle_on"), sub: t("smart_idle_on_sub"),
       value: SMART_IDLE.enabled ? t("on") : t("off"), act: function () {
         SMART_IDLE.enabled = !SMART_IDLE.enabled;
         ST.smart_idle = SMART_IDLE; saveSettings(); resetSmartIdle(); renderSettings();
-      } });
-    rows.push({ kind: "cycle", key: "smart-idle-home", label: t("smart_idle_home"),
+      }
+    });
+    rows.push({
+      kind: "cycle", key: "smart-idle-home", label: t("smart_idle_home"),
       value: SMART_IDLE.home_idle_minutes ? t("n_min", { n: SMART_IDLE.home_idle_minutes }) : t("off"), act: function () {
         var i = SMART_IDLE_HOME_STEPS.indexOf(SMART_IDLE.home_idle_minutes);
         SMART_IDLE.home_idle_minutes = SMART_IDLE_HOME_STEPS[(i + 1) % SMART_IDLE_HOME_STEPS.length];
         ST.smart_idle = SMART_IDLE; saveSettings(); resetSmartIdle(); renderSettings();
-      } });
-    rows.push({ kind: "cycle", key: "smart-idle-action", label: t("smart_idle_action"),
+      }
+    });
+    rows.push({
+      kind: "cycle", key: "smart-idle-action", label: t("smart_idle_action"),
       value: t("smart_idle_act_" + SMART_IDLE.home_action), act: function () {
         var i = SMART_IDLE_ACTIONS.indexOf(SMART_IDLE.home_action);
         SMART_IDLE.home_action = SMART_IDLE_ACTIONS[(i + 1) % SMART_IDLE_ACTIONS.length];
         ST.smart_idle = SMART_IDLE; saveSettings(); renderSettings();
-      } });
-    rows.push({ kind: "cycle", key: "smart-idle-paused", label: t("smart_idle_paused"), sub: t("smart_idle_paused_sub"),
+      }
+    });
+    rows.push({
+      kind: "cycle", key: "smart-idle-paused", label: t("smart_idle_paused"), sub: t("smart_idle_paused_sub"),
       value: SMART_IDLE.paused_idle_minutes ? t("n_min", { n: SMART_IDLE.paused_idle_minutes }) : t("off"), act: function () {
         var i = SMART_IDLE_PAUSED_STEPS.indexOf(SMART_IDLE.paused_idle_minutes);
         SMART_IDLE.paused_idle_minutes = SMART_IDLE_PAUSED_STEPS[(i + 1) % SMART_IDLE_PAUSED_STEPS.length];
         ST.smart_idle = SMART_IDLE; saveSettings(); renderSettings();
-      } });
-    rows.push({ kind: "toggle", key: "smart-idle-quiet", label: t("smart_idle_quiet"), sub: t("smart_idle_quiet_sub"),
+      }
+    });
+    rows.push({
+      kind: "toggle", key: "smart-idle-quiet", label: t("smart_idle_quiet"), sub: t("smart_idle_quiet_sub"),
       value: SMART_IDLE.quiet_hours.enabled ? t("on") : t("off"), act: function () {
         SMART_IDLE.quiet_hours.enabled = !SMART_IDLE.quiet_hours.enabled;
         ST.smart_idle = SMART_IDLE; saveSettings(); renderSettings();
-      } });
+      }
+    });
     rows.push(head(t("soundscape")));
     var curSound = window.Soundscape ? window.Soundscape.current() : SOUND_TYPE;
     rows.push({
@@ -3727,9 +3936,11 @@
     });
     // glass panels: off, on, on with no blur (for slower TVs)
     rows.push(head(t("glass_head")));
-    rows.push({ kind: "cycle", key: "glass", label: t("glass"), value: GLASS === "lite" ? t("glass_lite") : GLASS === "on" ? t("on") : t("off"), act: function () {
-      GLASS = GLASS === "off" ? "on" : GLASS === "on" ? "lite" : "off"; ST.glass = GLASS; saveSettings(); movingTiles();
-    } });
+    rows.push({
+      kind: "cycle", key: "glass", label: t("glass"), value: GLASS === "lite" ? t("glass_lite") : GLASS === "on" ? t("on") : t("off"), act: function () {
+        GLASS = GLASS === "off" ? "on" : GLASS === "on" ? "lite" : "off"; ST.glass = GLASS; saveSettings(); movingTiles();
+      }
+    });
     // the focused tile's slow sway: off by itself with glass "lite", and here for a TV that flickers (#52)
     rows.push({ kind: "toggle", key: "moving-tiles", label: t("moving_tiles"), value: MOVING ? t("on") : t("off"), act: function () {
       if (LIGHTER) return;   // held still while Lighter home is on
@@ -3766,64 +3977,86 @@
       clearIcons();
     } });
     // with glass app icons: the focused app shows its own colours, or stays glass (#32)
-    if (GLASS_ICONS) rows.push({ kind: "cycle", key: "glass-focus", label: t("glass_focus"),
+    if (GLASS_ICONS) rows.push({
+      kind: "cycle", key: "glass-focus", label: t("glass_focus"),
       value: GLASS_FOCUS === "glass" ? t("glass_focus_glass") : t("glass_focus_colour"), act: function () {
         GLASS_FOCUS = GLASS_FOCUS === "glass" ? "colour" : "glass"; ST.glass_focus = GLASS_FOCUS; saveSettings();
         document.documentElement.classList.toggle("gi-stay", GLASS_FOCUS === "glass");   // seen straight away
-      } });
+      }
+    });
     // how clear, 1 to 5 (#29): left and right on the row, or OK to step; seen straight away
     var setAmt = function (n) {
       n = Math.max(1, Math.min(5, n));
       if (n === GLASS_AMT) return;
       GLASS_AMT = n; ST.glass_amount = n; glassClasses(); glassShown = ""; saveSettings();
     };
-    rows.push({ kind: "slider", key: "glass-amount", label: t("glass_amount"), value: t("glass_amt_" + GLASS_AMT), level: GLASS_AMT,
-      adjust: function (dx) { setAmt(GLASS_AMT + dx); }, act: function () { setAmt(GLASS_AMT === 5 ? 1 : GLASS_AMT + 1); } });
+    rows.push({
+      kind: "slider", key: "glass-amount", label: t("glass_amount"), value: t("glass_amt_" + GLASS_AMT), level: GLASS_AMT,
+      adjust: function (dx) { setAmt(GLASS_AMT + dx); }, act: function () { setAmt(GLASS_AMT === 5 ? 1 : GLASS_AMT + 1); }
+    });
     // the Night clock: frosted (the photo's frosted copy) or liquid glass (#25)
-    rows.push({ kind: "cycle", key: "clock-style", label: t("clock_style"), value: CLOCK_LIQUID ? t("clock_liquid") : t("clock_frosted"), act: function () {
-      CLOCK_LIQUID = !CLOCK_LIQUID; ST.clock_style = CLOCK_LIQUID ? "liquid" : "frosted"; glassClasses(); saveSettings();
-    } });
+    rows.push({
+      kind: "cycle", key: "clock-style", label: t("clock_style"), value: CLOCK_LIQUID ? t("clock_liquid") : t("clock_frosted"), act: function () {
+        CLOCK_LIQUID = !CLOCK_LIQUID; ST.clock_style = CLOCK_LIQUID ? "liquid" : "frosted"; glassClasses(); saveSettings();
+      }
+    });
     rows.push(info("glass-note", t("glass_note", { keep: t("keep_watching") }) + " " + t("glass_icons_note") + " " + t("glass_amount_note") + " " + t("moving_tiles_note") + " " + t("lighter_note")));
     // the sound on every arrow and OK (#32): the TV's own, a softer one, or none
     rows.push(head(t("sound_head")));
-    rows.push({ kind: "cycle", key: "nav-sound", label: t("nav_sound"), value: t("nav_sound_" + SOUND_STYLE), act: function () {
-      SOUND_STYLE = SOUND_STYLE === "system" ? "soft" : SOUND_STYLE === "soft" ? "off" : "system";
-      ST.nav_sound = SOUND_STYLE; saveSettings(); blip(0, 0);
-    } });
+    rows.push({
+      kind: "cycle", key: "nav-sound", label: t("nav_sound"), value: t("nav_sound_" + SOUND_STYLE), act: function () {
+        SOUND_STYLE = SOUND_STYLE === "system" ? "soft" : SOUND_STYLE === "soft" ? "off" : "system";
+        ST.nav_sound = SOUND_STYLE; saveSettings(); blip(0, 0);
+      }
+    });
     // the video background: its switch only once there is a link
     rows.push(head(t("video_head")));
     if (VIDEO_URL) {
       var vidOn = typeof ST.video === "boolean" ? ST.video : true;
-      rows.push({ kind: "toggle", key: "video", label: t("video"), value: vidOn ? t("on") : t("off"), act: function () {
-        ST.video = !vidOn; saveSettings();
-      } });
+      rows.push({
+        kind: "toggle", key: "video", label: t("video"), value: vidOn ? t("on") : t("off"), act: function () {
+          ST.video = !vidOn; saveSettings();
+        }
+      });
     }
-    rows.push({ kind: "input", key: "video-url", label: t("video_url"), sub: VIDEO_URL || t("video_none"), act: function () {
-      startTyping({ label: t("video_url_type"), value: VIDEO_URL, url: true, submit: setVideoUrl });
-    } });
-    if (VIDEO_URL) rows.push({ kind: "action", key: "video-rm", label: t("video_remove"), danger: true, act: function () {
-      ST.video_url = ""; VIDEO_URL = ""; ST.video = false; saveSettings();
-    } });
+    rows.push({
+      kind: "input", key: "video-url", label: t("video_url"), sub: VIDEO_URL || t("video_none"), act: function () {
+        startTyping({ label: t("video_url_type"), value: VIDEO_URL, url: true, submit: setVideoUrl });
+      }
+    });
+    if (VIDEO_URL) rows.push({
+      kind: "action", key: "video-rm", label: t("video_remove"), danger: true, act: function () {
+        ST.video_url = ""; VIDEO_URL = ""; ST.video = false; saveSettings();
+      }
+    });
     rows.push(info("video-note", t("video_note")));
     // Now playing (#31): the card with the song and its buttons; it needs the computer or the on-TV app
     rows.push(head(t("np_head")));
-    rows.push({ kind: "toggle", key: "now-playing", label: t("np_show"), value: NP_ON ? t("on") : t("off"), act: function () {
-      NP_ON = !NP_ON; ST.now_playing = NP_ON; saveSettings(); refreshMusic();
-    } });
-    rows.push({ kind: "toggle", key: "ambient-music", label: t("ambient_music"), value: AMBIENT_MUSIC ? t("on") : t("off"), act: function () {
-      AMBIENT_MUSIC = !AMBIENT_MUSIC; ST.ambient_music = AMBIENT_MUSIC; saveSettings(); renderAmbientMusic();
-    } });
+    rows.push({
+      kind: "toggle", key: "now-playing", label: t("np_show"), value: NP_ON ? t("on") : t("off"), act: function () {
+        NP_ON = !NP_ON; ST.now_playing = NP_ON; saveSettings(); refreshMusic();
+      }
+    });
+    rows.push({
+      kind: "toggle", key: "ambient-music", label: t("ambient_music"), value: AMBIENT_MUSIC ? t("on") : t("off"), act: function () {
+        AMBIENT_MUSIC = !AMBIENT_MUSIC; ST.ambient_music = AMBIENT_MUSIC; saveSettings(); renderAmbientMusic();
+      }
+    });
     rows.push(info("np-note", t(OFFLINE ? "np_note_offline" : "np_note")));
     rows.push(head(t("photos_head")));
     rows.push(info("photos-count", photoCountText()));
     if (canPick()) rows.push({ kind: "action", key: "photo-pick", label: t("photos_pick"), sub: t("photos_pick_sub"), act: pickPhotos });
     else rows.push(info("photo-nopick", t("photos_no_pick"), "", t("photos_no_pick_sub")));
-    rows.push({ kind: "input", key: "photo-url", label: t("photos_url"), act: function () {
-      startTyping({ label: t("photos_url_type"), value: "", url: true, submit: addPhotoUrl });
-    } });
+    rows.push({
+      kind: "input", key: "photo-url", label: t("photos_url"), act: function () {
+        startTyping({ label: t("photos_url_type"), value: "", url: true, submit: addPhotoUrl });
+      }
+    });
     (Array.isArray(ST.photos) ? ST.photos : []).forEach(function (p, i) {
-      rows.push({ kind: "action", key: "photo-rm:" + p.id, label: t("photo_remove", { n: i + 1 }), thumb: photoSrc(p), danger: true,
-        act: function () { removePhoto(p.id); } });
+      rows.push({
+        kind: "action", key: "photo-rm:" + p.id, label: t("photo_remove", { n: i + 1 }), thumb: photoSrc(p), danger: true,
+        act: function () { removePhoto(p.id); }
+      });
     });
     rows.push(info("photos-note", t("photos_note")));
     rows.push(info("photos-storage", t("photos_storage", { n: MAX_PHOTOS })));
@@ -3848,7 +4081,7 @@
   function photoCountText() { return t("photos_count", { n: (Array.isArray(ST.photos) ? ST.photos : []).length, max: MAX_PHOTOS }); }
   function pickPhotos() {
     var ok = false;
-    try { ok = !!TV.pickPhotos(); } catch (e) {}
+    try { ok = !!TV.pickPhotos(); } catch (e) { }
     if (!ok) SET.msg = t("photos_no_pick");
   }
   function uid() { return Date.now().toString(36) + Math.floor(Math.random() * 1296).toString(36); }
@@ -3880,8 +4113,8 @@
         ST.video_url = u; ST.video = true; VIDEO_URL = u;
         saveSettings();
         SET.msg = t("video_added");
-      // Apple's own server (the tvOS aerials) uses a certificate from Apple's private CA, which
-      // Android and Chrome do not trust, so its links never load here whatever the format (#27).
+        // Apple's own server (the tvOS aerials) uses a certificate from Apple's private CA, which
+        // Android and Chrome do not trust, so its links never load here whatever the format (#27).
       } else SET.msg = t(/^https:\/\/sylvan\.apple\.com\//i.test(u) ? "video_apple" : "video_bad");
       if (zone === "settings") renderSettings();
     };
@@ -3918,7 +4151,7 @@
   function removePhoto(id) {
     var p = (ST.photos || []).filter(function (x) { return x.id === id; })[0];
     if (!p) return;
-    if (p.file) try { if (TV && TV.removePhoto) TV.removePhoto(p.file); } catch (e) {}
+    if (p.file) try { if (TV && TV.removePhoto) TV.removePhoto(p.file); } catch (e) { }
     ST.photos = ST.photos.filter(function (x) { return x.id !== id; });
     saveSettings();
   }
@@ -3929,9 +4162,11 @@
     var hidden = data.apps.filter(function (a) { return HIDDEN_TV.indexOf(a.package) >= 0; });
     if (!arr.items.length && !hidden.length) return [info("apps-none", t("apps_none"))];
     var row = function (it, where) {
-      return { kind: "item", key: "app:" + it.package, label: it.name, value: t(where), icon: it.package,
+      return {
+        kind: "item", key: "app:" + it.package, label: it.name, value: t(where), icon: it.package,
         act: function () { cycleApp(it.package); },
-        move: where === "app_hidden" ? null : function (d) { moveAppRow(it.package, d); } };
+        move: where === "app_hidden" ? null : function (d) { moveAppRow(it.package, d); }
+      };
     };
     rows.push(head(t("apps_home", { n: arr.line, max: DOCK_APPS })));
     arr.items.slice(0, arr.line).forEach(function (it) { rows.push(row(it, "app_on_home")); });
@@ -3985,42 +4220,215 @@
     renderGrid();
   }
 
+  // ---- Home Assistant devices settings ----
+  function haDevicesSettingsRows() {
+    var rows = [];
+    var url = ST.ha_url || "";
+    var token = ST.ha_token ? "••••••••" : "";
+    rows.push(info("ha-url-info", t("ha_url_now"), url || t("loc_unset"), token ? t("ha_token_title") + ": " + token : ""));
+    rows.push({
+      kind: "input",
+      key: "ha-input-url",
+      label: t("ha_import_url"),
+      value: url,
+      sub: t("ha_import_sub"),
+      act: function () {
+        startTyping({
+          label: t("ha_type_url"),
+          value: url,
+          url: true,
+          submit: function (val) {
+            importHaFromUrl(val);
+          }
+        });
+      }
+    });
+    rows.push({
+      kind: "input",
+      key: "ha-input-token",
+      label: t("ha_token_title"),
+      value: ST.ha_token || "",
+      act: function () {
+        startTyping({
+          label: t("ha_type_token"),
+          value: ST.ha_token || "",
+          submit: function (val) {
+            ST.ha_token = (val || "").trim();
+            saveSettings();
+            if (ST.ha_url) importHaFromUrl(ST.ha_url);
+          }
+        });
+      }
+    });
+
+    var devices = getHaDevices();
+    if (devices.length > 0) {
+      rows.push(head(t("ha_devices_heading")));
+      devices.forEach(function (dev) {
+        var isVisible = (ST.ha_hidden || []).indexOf(dev.entity_id) < 0;
+        rows.push({
+          kind: "check",
+          key: "hadev:" + dev.entity_id,
+          label: dev.name || dev.entity_id,
+          sub: dev.entity_id + " (" + (dev.state || "") + ")",
+          checked: isVisible,
+          act: function () {
+            toggleHaDeviceVisibility(dev.entity_id);
+          }
+        });
+      });
+      rows.push({
+        kind: "action",
+        key: "ha-clear",
+        label: t("ha_clear_all"),
+        danger: true,
+        confirmText: t("ha_clear_confirm"),
+        act: function () {
+          ST.ha_devices = [];
+          ST.ha_hidden = [];
+          delete ST.ha_url;
+          delete ST.ha_token;
+          saveSettings();
+          renderHaDevicesShelf();
+        }
+      });
+    }
+    rows.push(info("ha-note", t("ha_devices_note")));
+    return rows;
+  }
+
+  function getHaDevices() {
+    return Array.isArray(ST.ha_devices) ? ST.ha_devices : [];
+  }
+
+  function toggleHaDeviceVisibility(entity_id) {
+    var hidden = Array.isArray(ST.ha_hidden) ? ST.ha_hidden.slice() : [];
+    var idx = hidden.indexOf(entity_id);
+    if (idx >= 0) {
+      hidden.splice(idx, 1);
+    } else {
+      hidden.push(entity_id);
+    }
+    ST.ha_hidden = hidden;
+    saveSettings();
+    renderHaDevicesShelf();
+  }
+
+  function importHaFromUrl(rawUrl) {
+    rawUrl = (rawUrl || "").trim();
+    if (!rawUrl) return;
+    if (!/^https?:\/\//i.test(rawUrl)) {
+      rawUrl = (/^(\d+\.){3}\d+|^[^\/]+\.local\b/i.test(rawUrl) ? "http://" : "https://") + rawUrl;
+    }
+    var token = ST.ha_token || "";
+    // Check if token or key is in query params
+    var tokenMatch = rawUrl.match(/[?&](?:token|auth|key)=([^&]+)/i);
+    if (tokenMatch) {
+      token = decodeURIComponent(tokenMatch[1]);
+      rawUrl = rawUrl.replace(/[?&](?:token|auth|key)=[^&]+/i, "").replace(/[?&]$/, "");
+    }
+    // Clean base url
+    var base = rawUrl.replace(/\/api(\/states)?\/?$/, "").replace(/\/+$/, "");
+    ST.ha_url = base;
+    if (token) ST.ha_token = token;
+    saveSettings();
+
+    SET.msg = t("ha_importing");
+    if (zone === "settings") renderSettings();
+
+    var apiUrl = base + "/api/states";
+    var headers = {};
+    if (token) headers["Authorization"] = "Bearer " + token;
+
+    console.log("[HA] here ------   URL", apiUrl)
+    console.log("[HA] Fetching from:", apiUrl, "with token:", token ? (token.substring(0, 10) + "...") : "NONE");
+
+    fetch(apiUrl, { method: "GET", headers: headers })
+      .then(function (res) {
+        console.log("[HA] Response status:", res.status, res.statusText);
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        return res.json();
+      })
+      .then(function (states) {
+        console.log("[HA] States received, count:", Array.isArray(states) ? states.length : "invalid");
+        if (!Array.isArray(states)) throw new Error("Invalid response");
+        // Log all entity IDs received so we know what domains exist
+        states.forEach(function (s) {
+          if (s && s.entity_id) console.log("[HA] Entity:", s.entity_id, "State:", s.state);
+        });
+        // Filter to interactive & toggleable home entities
+        var allowedDomains = ["light", "switch", "fan", "climate", "cover", "scene", "script", "media_player", "input_boolean", "sensor", "binary_sensor", "lock", "vacuum", "automation"];
+        var imported = [];
+        states.forEach(function (s) {
+          if (!s || !s.entity_id) return;
+          var domain = s.entity_id.split(".")[0];
+          if (allowedDomains.indexOf(domain) >= 0) {
+            var name = (s.attributes && (s.attributes.friendly_name || s.attributes.name)) || s.entity_id;
+            imported.push({
+              entity_id: s.entity_id,
+              name: name,
+              domain: domain,
+              state: s.state
+            });
+          }
+        });
+        ST.ha_devices = imported;
+        saveSettings();
+        SET.msg = t("ha_import_success", { n: imported.length });
+        renderHaDevicesShelf();
+        if (zone === "settings") renderSettings();
+      })
+      .catch(function (err) {
+        console.error("[HA] Fetch error:", err);
+        SET.msg = t("ha_import_failed", { err: err.message || err });
+        if (zone === "settings") renderSettings();
+      });
+  }
+
   // ---- people: the same list the phone's People sheet edits ----
   function peopleRows() {
     var list = NOBODY ? [] : PEOPLE, rows = [];
     if (!list.length) rows.push(info("people-none", t("people_none")));
     list.forEach(function (p) {
-      rows.push({ kind: "nav", key: "person:" + p.id, label: p.name, avatar: p, sub: p.id === who && list.length > 1 ? t("person_on") : "",
-        act: function () { openPerson(p.id); }, move: function (d) { movePerson(p.id, d); } });
+      rows.push({
+        kind: "nav", key: "person:" + p.id, label: p.name, avatar: p, sub: p.id === who && list.length > 1 ? t("person_on") : "",
+        act: function () { openPerson(p.id); }, move: function (d) { movePerson(p.id, d); }
+      });
     });
     if (list.length < 12) {
-      rows.push({ kind: "input", key: "people-add", label: t("people_add"), act: function () {
-        startTyping({ label: t("people_type"), value: "", submit: addPerson });
-      } });
+      rows.push({
+        kind: "input", key: "people-add", label: t("people_add"), act: function () {
+          startTyping({ label: t("people_type"), value: "", submit: addPerson });
+        }
+      });
     } else rows.push(info("people-full", t("people_full")));
     rows.push(info("people-note", t("people_note")));
     return rows;
   }
   function personById(id) { return NOBODY ? null : PEOPLE.filter(function (p) { return p.id === id; })[0] || null; }
   function openPerson(id) {
-    SET.sub = { back: "person:" + id, crumb: t("sec_people"),
+    SET.sub = {
+      back: "person:" + id, crumb: t("sec_people"),
       title: function () { var p = personById(id); return p ? p.name : ""; },
       rows: function () {
         var p = personById(id);
         if (!p) return [];
         return [
-          { kind: "input", key: "p-name", label: t("person_name"), value: p.name, act: function () {
-            startTyping({ label: t("person_rename_type"), value: p.name, submit: function (v) { renamePerson(id, v); } });
-          } },
+          {
+            kind: "input", key: "p-name", label: t("person_name"), value: p.name, act: function () {
+              startTyping({ label: t("person_rename_type"), value: p.name, submit: function (v) { renamePerson(id, v); } });
+            }
+          },
           { kind: "action", key: "p-remove", label: t("person_remove", { name: p.name }), danger: true, act: function () { removePerson(id); } }
         ];
-      } };
+      }
+    };
     SET.keyFocus = "p-name";
   }
   function cleanName(v) { return String(v || "").replace(/\s+/g, " ").trim().slice(0, 40); }
   function newPersonId(name, list) {
     var base = name.toLowerCase();
-    try { base = base.normalize("NFD").replace(/[̀-ͯ]/g, ""); } catch (e) {}
+    try { base = base.normalize("NFD").replace(/[̀-ͯ]/g, ""); } catch (e) { }
     base = base.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 24) || "person";
     if (["both", "all", "everyone", "shared", "together"].indexOf(base) >= 0) base += "-1";
     var id = base, n = 2;
@@ -4040,7 +4448,7 @@
     renderShelf();
     if (OFFLINE || data.bridge === false) return;
     api("POST", "/api/people", { people: list })
-      .then(function (r) { keep("tvhome.people.list", { people: r.people || list, pending: false }); }, function () {});
+      .then(function (r) { keep("tvhome.people.list", { people: r.people || list, pending: false }); }, function () { });
   }
   function addPerson(v) {
     var name = cleanName(v), list = NOBODY ? [] : PEOPLE.slice();
@@ -4078,8 +4486,10 @@
     var on = QUICK.slice(), order = on.concat(QUICK_ALL.filter(function (q) { return on.indexOf(q) < 0; }));
     var rows = order.map(function (q) {
       var enabled = on.indexOf(q) >= 0;
-      return { kind: "check", key: "quick:" + q, label: t("quick_" + q), checked: enabled, sub: quickNeeds(q),
-        act: function () { toggleQuick(q); }, move: enabled ? function (d) { moveQuick(q, d); } : null };
+      return {
+        kind: "check", key: "quick:" + q, label: t("quick_" + q), checked: enabled, sub: quickNeeds(q),
+        act: function () { toggleQuick(q); }, move: enabled ? function (d) { moveQuick(q, d); } : null
+      };
     });
     rows.push(info("quick-note", t("quick_note")));
     return rows;
@@ -4111,7 +4521,7 @@
   // ---- about ----
   function aboutRows() {
     var ver = "";
-    try { ver = TV && TV.version ? TV.version() : ""; } catch (e) {}
+    try { ver = TV && TV.version ? TV.version() : ""; } catch (e) { }
     var run = ALONE ? "run_alone" : OFFLINE ? "run_off" : data.bridge === false ? "run_quiet" : "run_bridge";
     var hs = homeState(), homeRows = [];
     if (hs === "ask") homeRows.push({ kind: "action", key: "make-home", label: t("home_row"), sub: t("home_row_sub"), act: requestHome });
@@ -4143,7 +4553,7 @@
   function updRead() {
     var u = upd();
     UPD = null;
-    try { if (u) UPD = JSON.parse(u.state()); } catch (e) {}
+    try { if (u) UPD = JSON.parse(u.state()); } catch (e) { }
     return UPD;
   }
   // A newer release is out: one this TV can install, or one a copy built on another computer can't
@@ -4240,7 +4650,7 @@
     try { return TV && TV.homeState ? String(TV.homeState()) : "held"; } catch (e) { return "held"; }
   }
   function requestHome() {
-    try { if (TV && TV.requestHome) TV.requestHome(); } catch (e) {}
+    try { if (TV && TV.requestHome) TV.requestHome(); } catch (e) { }
   }
   function homeAsk() {
     if (kept("tvhome.home.asked") || kidsOn()) return;
@@ -4265,17 +4675,23 @@
     var rows = [info("upd-ver", t("about_version"), u.current || "")];
     if (u.latest) rows.push(info("upd-newest", t("upd_newest"), u.latest));   // both numbers side by side
     if (u.available) {
-      rows.push({ kind: "action", key: "upd-install", label: t("upd_install", { v: u.latest }),
+      rows.push({
+        kind: "action", key: "upd-install", label: t("upd_install", { v: u.latest }),
         sub: busy === "downloading" ? t("upd_downloading", { p: u.progress || 0 }) : busy === "installing" ? t("upd_confirm") : u.title || "",
-        act: function () { if (!busy) upd().install(); } });
+        act: function () { if (!busy) upd().install(); }
+      });
     }
-    rows.push({ kind: "action", key: "upd-check", label: t("upd_check"), sub: busy === "checking" ? t("upd_checking") : updWhen(u),
-      act: function () { if (!busy) upd().check(); } });
+    rows.push({
+      kind: "action", key: "upd-check", label: t("upd_check"), sub: busy === "checking" ? t("upd_checking") : updWhen(u),
+      act: function () { if (!busy) upd().check(); }
+    });
     if (u.error) rows.push(info("upd-err", t("upd_err_" + u.error)));
     else if (u.refused) rows.push(info("upd-err", t("upd_err_other_key")));
     else if (u.checked && !u.available && !busy) rows.push(info("upd-latest", t("upd_latest")));
-    rows.push({ kind: "toggle", key: "upd-auto", label: t("upd_auto"), value: u.auto ? t("on") : t("off"),
-      act: function () { upd().auto(!u.auto); } });
+    rows.push({
+      kind: "toggle", key: "upd-auto", label: t("upd_auto"), value: u.auto ? t("on") : t("off"),
+      act: function () { upd().auto(!u.auto); }
+    });
     rows.push(info("upd-note", t("upd_note")));
     return rows;
   }
@@ -4283,7 +4699,7 @@
   // Back to config.json for everything but the people and the apps (which have their own lists).
   function resetSettings() {
     (Array.isArray(ST.photos) ? ST.photos : []).forEach(function (p) {
-      if (p.file) try { if (TV && TV.removePhoto) TV.removePhoto(p.file); } catch (e) {}
+      if (p.file) try { if (TV && TV.removePhoto) TV.removePhoto(p.file); } catch (e) { }
     });
     ST = Array.isArray(ST.hidden_apps) ? { hidden_apps: ST.hidden_apps } : {};
     keep("tvhome.look", null);
@@ -4307,12 +4723,12 @@
     inp.setAttribute("autocapitalize", spec.url ? "off" : "words");
     $("set-type").classList.add("on");
     renderSettings();
-    try { inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); } catch (e) {}
+    try { inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); } catch (e) { }
   }
   function stopTyping() {
     SET.typing = null;
     $("set-type").classList.remove("on");
-    try { $("set-input").blur(); } catch (e) {}
+    try { $("set-input").blur(); } catch (e) { }
     renderSettings();
   }
   function typingKey(e) {
@@ -4490,8 +4906,10 @@
   // (media, numbers, colour buttons, voice, app buttons) is left alone so Android still gets it.
   var OK_KEYS = ["Enter", " ", "Select", "Accept", "NumpadEnter"];
   var BACK_KEYS = ["Escape", "Esc", "Backspace", "GoBack", "BrowserBack"];
-  var ARROWS = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0],
-    Up: [0, -1], Down: [0, 1], Left: [-1, 0], Right: [1, 0] };
+  var ARROWS = {
+    ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0],
+    Up: [0, -1], Down: [0, 1], Left: [-1, 0], Right: [1, 0]
+  };
   var ARROW_CODES = { 38: [0, -1], 40: [0, 1], 37: [-1, 0], 39: [1, 0], 19: [0, -1], 20: [0, 1], 21: [-1, 0], 22: [1, 0] };
   function isOk(e) { return OK_KEYS.indexOf(e.key) >= 0 || e.keyCode === 13 || e.keyCode === 23 || e.keyCode === 32; }
   function isBack(e) { return BACK_KEYS.indexOf(e.key) >= 0 || e.keyCode === 27 || e.keyCode === 8 || e.keyCode === 10009 || e.keyCode === 461; }   // 10009: Samsung; 461: VK_BACK (Titan OS, unconfirmed)
@@ -4529,7 +4947,7 @@
       g.gain.exponentialRampToValueAtTime(0.0001, now + 0.095);
       o.connect(g); g.connect(AC.destination);
       o.start(now); o.stop(now + 0.1);
-    } catch (e) {}
+    } catch (e) { }
   }
   function warmSound() {
     if (!SOUND || SOUND_STYLE !== "soft" || AC) return;
@@ -4544,7 +4962,7 @@
     // On the TV: Android's own navigation sound (TVOS.tick), the one other TV launchers play.
     // It follows the TV's "system sounds" switch. 1 up, 2 down, 3 left, 4 right, 0 OK.
     if (TV && TV.tick) {
-      try { TV.tick(dy < 0 ? 1 : dy > 0 ? 2 : dx < 0 ? 3 : dx > 0 ? 4 : 0); } catch (e) {}
+      try { TV.tick(dy < 0 ? 1 : dy > 0 ? 2 : dx < 0 ? 3 : dx > 0 ? 4 : 0); } catch (e) { }
       return;
     }
     // Anywhere else (a browser preview): a short tick synthesised with Web Audio, no sound file.
@@ -4572,7 +4990,7 @@
       cg.gain.exponentialRampToValueAtTime(0.0001, now + 0.015);
       c.connect(cg); cg.connect(AC.destination);
       c.start(now); c.stop(now + 0.02);
-    } catch (e) {}
+    } catch (e) { }
   }
 
   // The remote's own Settings/gear key (KEYCODE_SETTINGS = 176, or e.key "Settings"/"TvSettings").
@@ -4811,13 +5229,129 @@
   window.addEventListener("blur", okReset);
   window.addEventListener("blur", function () { wrapPending = null; arrowPress = null; });   // a key let go elsewhere
 
+  // ---------------- Touch, Gesture & Mouse Support ----------------
+  // Supports direct touch and phone usage as well as desktop mouse testing.
+  (function () {
+    function elZoneIndex(el) {
+      if (!el) return null;
+      var si = shelfEls.indexOf(el);
+      if (si >= 0) return { zone: "shelf", idx: si, el: el };
+      var hi = haDevEls.indexOf(el);
+      if (hi >= 0) return { zone: "hadevices", idx: hi, el: el };
+      var gi = gridEls.indexOf(el);
+      if (gi >= 0) return { zone: "grid", idx: gi, el: el };
+      var qi = quickEls.indexOf(el);
+      if (qi >= 0) return { zone: "quick", idx: qi, el: el };
+      return null;
+    }
+
+    function findItem(el) {
+      for (var i = 0; i < 6 && el && el !== document.body; i++, el = el.parentElement) {
+        var info = elZoneIndex(el);
+        if (info) return info;
+      }
+      return null;
+    }
+
+    function setItemFocus(info) {
+      if (!info) return;
+      if (info.zone === "shelf") { zone = "shelf"; s = info.idx; }
+      else if (info.zone === "hadevices") { zone = "hadevices"; haDevI = info.idx; }
+      else if (info.zone === "grid") { zone = "grid"; g = info.idx; }
+      else if (info.zone === "quick") { zone = "quick"; qi = info.idx; }
+      paintFocus();
+    }
+
+    // --- Mouse hover and click support ---
+    document.addEventListener("mouseover", function (e) {
+      var item = findItem(e.target);
+      if (item) setItemFocus(item);
+    }, false);
+
+    document.addEventListener("click", function (e) {
+      var item = findItem(e.target);
+      if (item) {
+        setItemFocus(item);
+        activate();
+      }
+    }, false);
+
+    // --- Touch and Swipe gesture support ---
+    var touchStartX = 0, touchStartY = 0, touchStartTime = 0;
+    var longPressTimer = null;
+    var SWIPE_THRESHOLD = 35; // minimum px for swipe
+
+    document.addEventListener("touchstart", function (e) {
+      if (e.touches.length !== 1) return;
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      touchStartTime = Date.now();
+
+      var item = findItem(e.target);
+      if (item) {
+        setItemFocus(item);
+        clearTimeout(longPressTimer);
+        longPressTimer = setTimeout(function () {
+          hold();
+        }, HOLD_MS || 550);
+      }
+    }, { passive: true });
+
+    document.addEventListener("touchmove", function (e) {
+      if (longPressTimer) {
+        var dx = Math.abs(e.touches[0].clientX - touchStartX);
+        var dy = Math.abs(e.touches[0].clientY - touchStartY);
+        if (dx > 10 || dy > 10) {
+          clearTimeout(longPressTimer);
+          longPressTimer = null;
+        }
+      }
+    }, { passive: true });
+
+    document.addEventListener("touchend", function (e) {
+      if (longPressTimer) {
+        clearTimeout(longPressTimer);
+        longPressTimer = null;
+      }
+      if (e.changedTouches.length !== 1) return;
+      var dx = e.changedTouches[0].clientX - touchStartX;
+      var dy = e.changedTouches[0].clientY - touchStartY;
+      var dt = Date.now() - touchStartTime;
+      var absX = Math.abs(dx);
+      var absY = Math.abs(dy);
+
+      // Swipe detected
+      if (absX > SWIPE_THRESHOLD || absY > SWIPE_THRESHOLD) {
+        if (absX > absY) {
+          // Horizontal swipe
+          move(dx > 0 ? -1 : 1, 0);
+        } else {
+          // Vertical swipe
+          move(0, dy > 0 ? -1 : 1);
+        }
+        return;
+      }
+
+      // Tap detected (short duration & small delta)
+      if (dt < 400 && absX < 15 && absY < 15) {
+        var item = findItem(document.elementFromPoint(e.changedTouches[0].clientX, e.changedTouches[0].clientY));
+        if (item) {
+          setItemFocus(item);
+          activate();
+        }
+      }
+    }, { passive: true });
+  }());
+
   // ---------------- data ----------------
   function nativeApps() {
     var list;
     try { list = JSON.parse(TV.apps()); } catch (e) { return null; }
     return list.map(function (a) {
-      return { kind: "app", name: RENAME[a.package] ? t(RENAME[a.package]) : a.label, package: a.package,
-        banner: TV.bannerUrl ? TV.bannerUrl(a.package) : "http://tvos.invalid/banner/" + a.package };   // the launcher makes one when the app has none
+      return {
+        kind: "app", name: RENAME[a.package] ? t(RENAME[a.package]) : a.label, package: a.package,
+        banner: TV.bannerUrl ? TV.bannerUrl(a.package) : "http://tvos.invalid/banner/" + a.package
+      };   // the launcher makes one when the app has none
     });
   }
   function sortApps(list) {
@@ -4833,6 +5367,7 @@
 
   function render() {
     renderShelf();
+    renderHaDevicesShelf();
     renderGrid();
     if (!touched && zone !== "updask" && !restoreFocus()) startFocus();
     paintFocus();
@@ -4849,11 +5384,11 @@
       // people added, renamed or removed in Home settings while the computer was off
       list = lst.people;
       api("POST", "/api/people", { people: lst.people })
-        .then(function (r) { keep("tvhome.people.list", { people: r.people || lst.people, pending: false }); }, function () {});
+        .then(function (r) { keep("tvhome.people.list", { people: r.people || lst.people, pending: false }); }, function () { });
     } else if (lo && lo.pending && lo.ids) {
       list = localPeopleOrder(list, true);
       api("POST", "/api/people", { order: lo.ids })
-        .then(function () { keep("tvhome.people.order", { ids: lo.ids, pending: false }); }, function () {});
+        .then(function () { keep("tvhome.people.order", { ids: lo.ids, pending: false }); }, function () { });
     }
     if (zone !== "pmenu") setPeople(list);
   }
@@ -4863,17 +5398,19 @@
     if (lo && lo.pending && lo.packages) {
       data.order = { saved: true, line: lo.line, packages: lo.packages };
       api("POST", "/api/app-order", { order: lo.packages, line: lo.line })
-        .then(function () { lo.pending = false; keep("tvhome.order.tv", lo); }, function () {});
+        .then(function () { lo.pending = false; keep("tvhome.order.tv", lo); }, function () { });
     }
   }
 
   function sendWatchNext() {
     if (!TV || !TV.watchNext) return Promise.resolve();
     var rows = [];
-    try { rows = JSON.parse(TV.watchNext()) || []; } catch (e) {}
+    try { rows = JSON.parse(TV.watchNext()) || []; } catch (e) { }
     rows = rows.filter(function (r) { return r.package && r.title; }).map(function (r) {
-      return { package: r.package, title: r.title, episode_title: r.episode_title || null,
-        season: r.season || null, episode: r.episode || null, engaged: r.engaged || 0 };
+      return {
+        package: r.package, title: r.title, episode_title: r.episode_title || null,
+        season: r.season || null, episode: r.episode || null, engaged: r.engaged || 0
+      };
     });
     return api("POST", "/api/watch-next", { rows: rows });
   }
@@ -4889,7 +5426,7 @@
       // Keep watching with no computer: Android's own Watch Next list, the same for everyone in the house
       if (TV && TV.watchNext && KW_ON) {
         var wn = [];
-        try { wn = JSON.parse(TV.watchNext()) || []; } catch (e) {}
+        try { wn = JSON.parse(TV.watchNext()) || []; } catch (e) { }
         var skipPkgs = (window.COUCH_CONFIG && window.COUCH_CONFIG.home && window.COUCH_CONFIG.home.skip_watch_next) || [];
         var dismissed = kept("tvhome.dismissed_shows") || [];
         wn = wn.filter(function (it) {
@@ -4905,13 +5442,13 @@
       render();
       return Promise.resolve();
     }
-    var people = api("GET", "/api/people").then(bridgePeople, function () {});
+    var people = api("GET", "/api/people").then(bridgePeople, function () { });
     // LG: a warning when Developer Mode (and so couch-tv) is at risk, from the bridge
     if (window.COUCH_WEBOS) api("GET", "/api/tvs").then(function (j) {
       var id = TV_ID || j["default"], me = null;
       (j.tvs || []).forEach(function (x) { if (x.id === id || (!me && (j.tvs || []).length === 1)) me = x; });
       devWarn(me && me.devmode);
-    }, function () {});
+    }, function () { });
     var jobs = [
       people.then(function () {
         if (!KW_ON) return null;   // Keep watching is off: no calls for it
@@ -4969,7 +5506,8 @@
 
   // the native side calls these
   // Home on the remote also re-reads the lists, so an order arranged on the phone shows straight away
-  window.tv = { back: function () { if (idleAmbientActive) { setIdleAmbient(false); resetSmartIdle(); return; } if (idlePhotoInput(null)) return; goHome(); resetIdlePhoto(); resetSmartIdle(); },
+  window.tv = {
+    back: function () { if (idleAmbientActive) { setIdleAmbient(false); resetSmartIdle(); return; } if (idlePhotoInput(null)) return; goHome(); resetIdlePhoto(); resetSmartIdle(); },
     home: function () { forgetFocus(); if (idleAmbientActive) { setIdleAmbient(false); resetSmartIdle(); return; } if (idlePhotoInput(null)) return; if (zone === "settings") closeSettings(); else goHome(); refresh(); resetIdlePhoto(); resetSmartIdle(); },
     screenOff: function () { toggleScreenOff(true); },
     wakeScreen: function () { toggleScreenOff(false); },
@@ -4985,7 +5523,8 @@
     // the launcher's updater has news (Updater.kt)
     update: function (state) { updChanged(state); },
     // Android's "default home app" chooser closed (HomeRole.kt, #98)
-    homeAnswered: function (held) { homeAnswered(held); } };
+    homeAnswered: function (held) { homeAnswered(held); }
+  };
 
   function start() {
     readConfig();
@@ -4993,7 +5532,7 @@
     kidSync();   // a kids profile on the couch: its shelf before anything else shows
     staticText();
     // a page that loads (or reloads) always starts awake: never leave the backlight override behind
-    try { if (TV && TV.setScreenOff) TV.setScreenOff(false); } catch (e) {}
+    try { if (TV && TV.setScreenOff) TV.setScreenOff(false); } catch (e) { }
     var ov = $("screen-off-overlay");
     if (ov) {
       ov.addEventListener("click", function (e) {
@@ -5080,11 +5619,11 @@
       var w = j && j.who;
       if (w && PEOPLE.some(function (p) { return p.id === w; })) {
         bridgeWho = w;
-        if (w !== who) { who = w; try { localStorage.setItem("tvhome.who", who); } catch (e) {} }
+        if (w !== who) { who = w; try { localStorage.setItem("tvhome.who", who); } catch (e) { } }
         return;
       }
       return api("POST", "/api/who", { who: who });
-    }).catch(function () {});
+    }).catch(function () { });
     hello.then(refresh).then(function () { mark("home-painted-live"); updTell(); updAsk(); homeAsk(); });
     resetIdlePhoto();
   }

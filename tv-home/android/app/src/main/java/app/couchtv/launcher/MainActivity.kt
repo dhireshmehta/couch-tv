@@ -93,7 +93,7 @@ class MainActivity : Activity() {
         main.postDelayed({ CrashGuard.settled(this) }, CrashGuard.SETTLE_MS)
         // Lets a computer inspect the page over ADB (chrome://inspect). Only reachable with ADB access.
         // Right after power on the TV's WebView can still be getting ready: never crash over it.
-        runCatching { WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG) }
+        runCatching { WebView.setWebContentsDebuggingEnabled(true) }
         CrashGuard.install(this)   // the WebView puts its own crash handler in front: ours goes first again
         root = FrameLayout(this).apply { setBackgroundColor(GROUND) }
         setContentView(root)
@@ -360,6 +360,12 @@ class MainActivity : Activity() {
         addJavascriptInterface(Native(), "TVOS")
         addJavascriptInterface(HomeAssistant.Page(this@MainActivity, this), "TVHA")   // smart home, see HomeAssistant.kt
         addJavascriptInterface(Updater.Page(this@MainActivity, this), "TVUP")   // updates from GitHub releases, see Updater.kt
+        webChromeClient = object : android.webkit.WebChromeClient() {
+            override fun onConsoleMessage(msg: android.webkit.ConsoleMessage): Boolean {
+                android.util.Log.d("couchtv-js", "${msg.sourceId()}:${msg.lineNumber()} [${msg.messageLevel()}] ${msg.message()}")
+                return true
+            }
+        }
         webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView, url: String) {
                 if (!loadFailed && url.startsWith("http")) {

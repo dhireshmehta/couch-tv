@@ -199,6 +199,36 @@
       { entity: "script.good_morning", name: "Good morning" }];
     var reply = function (id, r) { setTimeout(function () { if (window.smartHome) window.smartHome.reply(id, r); }, 150); };
     var room = function (e) { return rooms.filter(function (r) { return r.entity === e; })[0]; };
+
+    // Stand-in fetch states endpoint when previewing with mock=1&ha=1
+    var origFetch = window.fetch;
+    window.fetch = function (url, opts) {
+      if (typeof url === "string" && url.indexOf("/api/states") >= 0) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: function () {
+            return Promise.resolve([
+              { entity_id: "light.living_room_light", state: "on", attributes: { friendly_name: "Living Room Light" } },
+              { entity_id: "switch.kitchen_coffee", state: "off", attributes: { friendly_name: "Coffee Machine" } },
+              { entity_id: "climate.living_room", state: "cool", attributes: { friendly_name: "AC Living Room" } },
+              { entity_id: "scene.movie_night", state: "scening", attributes: { friendly_name: "Movie Night Scene" } },
+              { entity_id: "light.bedroom_lamp", state: "off", attributes: { friendly_name: "Bedroom Lamp" } },
+              { entity_id: "fan.ceiling_fan", state: "on", attributes: { friendly_name: "Ceiling Fan" } }
+            ]);
+          }
+        });
+      }
+      if (typeof url === "string" && url.indexOf("/api/services/") >= 0) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: function () { return Promise.resolve({}); }
+        });
+      }
+      return origFetch ? origFetch.apply(this, arguments) : Promise.reject(new Error("fetch failed"));
+    };
+
     window.TVHA = {
       info: function () {
         return JSON.stringify({ climate: rooms.map(function (r) { return { entity: r.entity, name: r.name }; }), scenes: scenes, doorbell: true });

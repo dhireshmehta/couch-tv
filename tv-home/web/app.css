@@ -400,6 +400,32 @@ html.still .tile.focus .face, html.still .tile.focus .face::after { animation: n
 .ncard .nbar i { height: 100%; background: #fff; }
 .ncard.focus { transform: scale(1.05); box-shadow: 0 0 0 0.1875rem #fff, 0 1.25rem 2.5rem rgba(0, 0, 0, 0.45); }
 
+/* Home Assistant Devices Shelf row */
+.ha-devices-shelf { display: none; }
+.ha-devices-shelf.on { display: block; }
+.theme-night .ha-devices-shelf { top: 40rem; }
+.theme-night.has-both-shelves #shelf-section { top: 32rem; }
+.theme-night.has-both-shelves .ha-devices-shelf { top: 44.5rem; }
+.hacard {
+  display: flex; align-items: center; gap: 1.125rem; width: 22rem; height: 6.25rem; padding: 0.875rem 1.25rem;
+  border-radius: 1.625rem; background: rgba(255, 255, 255, 0.1);
+  -webkit-backdrop-filter: blur(1.5rem); backdrop-filter: blur(1.5rem);
+  box-shadow: inset 0 0 0 0.0625rem rgba(255, 255, 255, 0.15);
+  transition: transform 240ms var(--ease), box-shadow 240ms var(--ease), background 240ms var(--ease);
+}
+.hacard.on { background: rgba(255, 255, 255, 0.22); box-shadow: inset 0 0 0 0.0625rem rgba(255, 255, 255, 0.35); }
+.hacard .ha-icon {
+  width: 3.25rem; height: 3.25rem; flex: none; border-radius: 1rem;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255, 255, 255, 0.14); color: #fff;
+}
+.hacard.on .ha-icon { background: #fff; color: #111; }
+.hacard .ha-icon svg { width: 1.875rem; height: 1.875rem; fill: currentColor; stroke: none; }
+.hacard .ha-info { min-width: 0; flex: 1; display: flex; flex-direction: column; justify-content: center; }
+.hacard .ha-name { font-size: 1.375rem; line-height: 1.625rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff; }
+.hacard .ha-state { font-size: 1.0625rem; line-height: 1.375rem; color: rgba(255, 255, 255, 0.7); text-transform: capitalize; margin-top: 0.125rem; }
+.hacard.focus { transform: scale(1.06); box-shadow: 0 0 0 0.1875rem #fff, 0 1rem 2rem rgba(0, 0, 0, 0.45); }
+
 /* the dock */
 .theme-night .apps { top: auto; bottom: 2.875rem; left: 50%; right: auto; transform: translateX(-50%); }
 .theme-night .grid {
@@ -1991,3 +2017,5 @@ html.dock-mac.theme-night .app.hop { animation: dock-hop 520ms 1; }
   html.dock-mac.theme-night .app, html.dock-mac.theme-night .grid, html.dock-mac.theme-night .app .label { transition: none; }
   html.dock-mac.theme-night .app.hop { animation: none; }
 }
+/* ---- mouse cursor: makes testing in a desktop browser easier ---- */
+.app, .hacard, .shelf-track > * { cursor: pointer; }
