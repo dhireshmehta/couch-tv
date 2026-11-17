@@ -522,6 +522,11 @@ People and the app order are not part of Home settings' file: they use the lists
 without one), so the phone's People and Arrange apps and the TV always show the same thing. Apps
 hidden in Home settings are hidden on that TV only and are left out of what the TV tells the phone.
 
+**Backup on the TV.** About has **Save settings to this TV**, which writes the Home settings as JSON to
+`settings/couch-tv-settings.json` in the app's own folder (Android/data/app.couchtv.launcher/files, reached
+over adb or a file manager). **Load settings from this TV** reads that file back (OK twice). The file has a
+`format` and a `version`. The photos and the Home Assistant token are left out, and a load keeps this TV's own.
+
 To go back to `config.json`: Home settings, About, **Reset home settings** (OK twice). It resets
 everything except the people and the apps. Changing `config.json` later does not override a choice
 already made on the TV.

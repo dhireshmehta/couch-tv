@@ -2824,10 +2824,12 @@
   function renderHaDevicesShelf() {
     var sec = $("ha-devices-section");
     var track = $("ha-devices-track");
+    applyHaAutoRefresh();
     if (!sec || !track) return;
     var rawDevices = getHaDevices();
     var hidden = Array.isArray(ST.ha_hidden) ? ST.ha_hidden : [];
-    haDevItems = rawDevices.filter(function (d) { return hidden.indexOf(d.entity_id) < 0; });
+    // the flag in Home settings, Smart Home: off takes the row off the home (the devices and the Info card stay)
+    haDevItems = haShowOn() ? rawDevices.filter(function (d) { return hidden.indexOf(d.entity_id) < 0; }) : [];
 
     if (!haDevItems.length) {
       sec.classList.remove("on");
@@ -2858,7 +2860,7 @@
         '<span class="ha-state">' + esc(stateText) + '</span>' +
         '</div>' +
         '</div>';
-    }).join("");
+    }).join("") + (haRefreshButtonOn() ? haRefreshCardHtml() : "");
 
     haDevEls = Array.prototype.slice.call(track.children);
     haDevEls.forEach(function (el, i) {
@@ -2872,6 +2874,7 @@
   }
 
   function toggleHaDeviceFromShelf() {
+    if (haRefreshButtonOn() && haDevI === haDevItems.length) { refreshHaDevices(false); return; }
     var dev = haDevItems[haDevI];
     if (!dev) return;
     var base = ST.ha_url || "";
@@ -4225,6 +4228,15 @@
     var rows = [];
     var url = ST.ha_url || "";
     var token = ST.ha_token ? "••••••••" : "";
+    rows.push({
+      kind: "toggle", key: "ha-show", label: t("ha_show"), sub: t("ha_show_sub"),
+      value: haShowOn() ? t("on") : t("off"),
+      act: function () {
+        ST.ha_show = !haShowOn();
+        saveSettings();
+        renderHaDevicesShelf();
+      }
+    });
     rows.push(info("ha-url-info", t("ha_url_now"), url || t("loc_unset"), token ? t("ha_token_title") + ": " + token : ""));
     rows.push({
       kind: "input",
@@ -4258,6 +4270,27 @@
             if (ST.ha_url) importHaFromUrl(ST.ha_url);
           }
         });
+      }
+    });
+
+    rows.push({
+      kind: "cycle", key: "ha-auto-refresh", label: t("ha_auto_refresh"), sub: t("ha_auto_refresh_sub"),
+      value: haRefreshLabel(haRefreshSecs()),
+      act: function () {
+        var cur = haRefreshSecs(), i = 0;
+        for (var k = 0; k < HA_REFRESH_OPTIONS.length; k++) if (HA_REFRESH_OPTIONS[k][0] === cur) i = k;
+        ST.ha_refresh = HA_REFRESH_OPTIONS[(i + 1) % HA_REFRESH_OPTIONS.length][0];
+        saveSettings();
+        applyHaAutoRefresh();
+      }
+    });
+    rows.push({
+      kind: "toggle", key: "ha-refresh-button", label: t("ha_refresh_button"), sub: t("ha_refresh_button_sub"),
+      value: haRefreshButtonOn() ? t("on") : t("off"),
+      act: function () {
+        ST.ha_refresh_button = !haRefreshButtonOn();
+        saveSettings();
+        renderHaDevicesShelf();
       }
     });
 
@@ -4314,6 +4347,90 @@
     renderHaDevicesShelf();
   }
 
+  // the entities the home shows: the domains a tile can toggle, read or open
+  function haDevicesFrom(states) {
+    var allowedDomains = ["light", "switch", "fan", "climate", "cover", "scene", "script", "media_player", "input_boolean", "sensor", "binary_sensor", "lock", "vacuum", "automation"];
+    var out = [];
+    states.forEach(function (s) {
+      if (!s || !s.entity_id) return;
+      var domain = s.entity_id.split(".")[0];
+      if (allowedDomains.indexOf(domain) >= 0) {
+        var name = (s.attributes && (s.attributes.friendly_name || s.attributes.name)) || s.entity_id;
+        out.push({ entity_id: s.entity_id, name: name, domain: domain, state: s.state });
+      }
+    });
+    return out;
+  }
+
+  // ---- Home Assistant: refresh the devices and their states, by hand or every so often ----
+  // Home settings, Smart Home: ST.ha_refresh (seconds, 0 = off) and ST.ha_refresh_button (the refresh
+  // tile at the end of the row, shown unless turned off). A refresh reads /api/states again, so new or
+  // removed entities and every state come up to date.
+  var HA_REFRESH_OPTIONS = [[0, "ha_refresh_off"], [10, "ha_refresh_10s"], [15, "ha_refresh_15s"], [30, "ha_refresh_30s"],
+    [60, "ha_refresh_1m"], [180, "ha_refresh_3m"], [300, "ha_refresh_5m"], [600, "ha_refresh_10m"], [900, "ha_refresh_15m"]];
+  var HA_REFRESH_ICON = '<svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.74 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>';
+  var haRefreshTimer = null, haRefreshTimerSecs = 0, haRefreshBusy = false;
+  function haRefreshSecs() {
+    var v = Number(ST.ha_refresh);
+    for (var i = 0; i < HA_REFRESH_OPTIONS.length; i++) if (HA_REFRESH_OPTIONS[i][0] === v) return v;
+    return 0;
+  }
+  function haRefreshLabel(secs) {
+    for (var i = 0; i < HA_REFRESH_OPTIONS.length; i++) if (HA_REFRESH_OPTIONS[i][0] === secs) return t(HA_REFRESH_OPTIONS[i][1]);
+    return t("ha_refresh_off");
+  }
+  function haRefreshButtonOn() { return ST.ha_refresh_button !== false; }
+  function haShowOn() { return ST.ha_show !== false; }
+  function haRefreshCardHtml() {
+    return '<div class="hacard ha-refresh" role="button" data-refresh="1">' +
+      '<div class="ha-icon">' + HA_REFRESH_ICON + '</div>' +
+      '<div class="ha-info"><span class="ha-name">' + esc(t("ha_refresh")) + '</span>' +
+      '<span class="ha-state">' + esc(t("ha_refresh_sub")) + '</span></div>' +
+      '</div>';
+  }
+  // (re)arms the timer for the chosen interval; does nothing when it already runs at that interval
+  function applyHaAutoRefresh() {
+    var want = ST.ha_url ? haRefreshSecs() : 0;
+    if (want === haRefreshTimerSecs) return;
+    clearInterval(haRefreshTimer);
+    haRefreshTimer = want ? setInterval(function () { refreshHaDevices(true); }, want * 1000) : null;
+    haRefreshTimerSecs = want;
+  }
+  // Reads the entities and their states from Home Assistant again. A silent refresh (the timer) says
+  // nothing when it fails, and it saves settings only when the list itself changes, so states that
+  // change often do not write settings every time.
+  function refreshHaDevices(silent) {
+    var base = ST.ha_url || "";
+    if (!base || haRefreshBusy) return;
+    haRefreshBusy = true;
+    var token = ST.ha_token || "";
+    var headers = {};
+    if (token) headers["Authorization"] = "Bearer " + token;
+    fetch(base + "/api/states", { method: "GET", headers: headers })
+      .then(function (res) {
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        return res.json();
+      })
+      .then(function (states) {
+        if (!Array.isArray(states)) throw new Error("Invalid response");
+        var prev = getHaDevices(), next = haDevicesFrom(states);
+        ST.ha_devices = next;
+        var listChanged = prev.length !== next.length || next.some(function (d, i) {
+          return prev[i].entity_id !== d.entity_id || prev[i].name !== d.name;
+        });
+        if (listChanged) saveSettings();
+        if (canon(prev) !== canon(next)) {
+          renderHaDevicesShelf();
+          if (zone === "settings" && !SET.typing && !SET.lift) renderSettings();
+        }
+        if (!silent) toast(t("ha_refreshed"));
+      })
+      .catch(function (err) {
+        if (!silent) toast(t("ha_import_failed", { err: err.message || err }));
+      })
+      .then(function () { haRefreshBusy = false; });
+  }
+
   function importHaFromUrl(rawUrl) {
     rawUrl = (rawUrl || "").trim();
     if (!rawUrl) return;
@@ -4357,21 +4474,7 @@
           if (s && s.entity_id) console.log("[HA] Entity:", s.entity_id, "State:", s.state);
         });
         // Filter to interactive & toggleable home entities
-        var allowedDomains = ["light", "switch", "fan", "climate", "cover", "scene", "script", "media_player", "input_boolean", "sensor", "binary_sensor", "lock", "vacuum", "automation"];
-        var imported = [];
-        states.forEach(function (s) {
-          if (!s || !s.entity_id) return;
-          var domain = s.entity_id.split(".")[0];
-          if (allowedDomains.indexOf(domain) >= 0) {
-            var name = (s.attributes && (s.attributes.friendly_name || s.attributes.name)) || s.entity_id;
-            imported.push({
-              entity_id: s.entity_id,
-              name: name,
-              domain: domain,
-              state: s.state
-            });
-          }
-        });
+        var imported = haDevicesFrom(states);
         ST.ha_devices = imported;
         saveSettings();
         SET.msg = t("ha_import_success", { n: imported.length });
@@ -4530,12 +4633,76 @@
       info("ver", t("about_version"), ver || t("about_web")),
       info("code", t("about_code"), REPO_URL),
       info("run", t("about_running"), t(run)),
-      info("kept", t("about_kept"), t(OFFLINE || data.bridge === false ? "kept_tv" : "kept_both")),
+      info("kept", t("about_kept"), t(OFFLINE || data.bridge === false ? "kept_tv" : "kept_both"))
+    ]).concat(backupRows(), [
       { kind: "action", key: "restart", label: t("about_restart"), sub: t("about_restart_sub"), act: restartHome },
       { kind: "action", key: "reset", label: t("about_reset"), sub: t("about_reset_sub"), danger: true, confirmText: t("confirm_reset"),
         act: resetSettings }
     ]);
   }
+  // ---- Home settings backup: one JSON file on this TV (the launcher's app folder, MainActivity Native) ----
+  // The file holds the Home settings except the photos and the Home Assistant token: those belong to
+  // this TV, so a load keeps this TV's own. Needs the launcher; a browser or a preview has none.
+  var BACKUP_FORMAT = "couch-tv-home-settings", BACKUP_VERSION = 1;
+  function backupBridge() {
+    return TV && TV.saveSettingsBackup && TV.loadSettingsBackup ? TV : null;
+  }
+  function settingsBackupText() {
+    var s = {};
+    Object.keys(ST).forEach(function (k) { if (k !== "photos" && k !== "ha_token") s[k] = ST[k]; });
+    return JSON.stringify({ format: BACKUP_FORMAT, version: BACKUP_VERSION, saved: new Date().toISOString(), settings: s }, null, 2);
+  }
+  // the settings in a backup text, or an error key for the message
+  function settingsFromBackup(text) {
+    var j = null;
+    try { j = JSON.parse(text); } catch (e) { return { error: "backup_bad" }; }
+    if (!j || j.format !== BACKUP_FORMAT || typeof j.version !== "number" || j.version > BACKUP_VERSION) return { error: "backup_bad" };
+    if (!j.settings || typeof j.settings !== "object" || Array.isArray(j.settings)) return { error: "backup_bad" };
+    return { settings: j.settings, saved: j.saved || "" };
+  }
+  // the loaded settings, plus this TV's own photos and Home Assistant token
+  function mergeBackupSettings(settings) {
+    var out = {};
+    Object.keys(settings).forEach(function (k) { if (k !== "photos" && k !== "ha_token") out[k] = settings[k]; });
+    if (ST.photos) out.photos = ST.photos;
+    if (ST.ha_token) out.ha_token = ST.ha_token;
+    return out;
+  }
+  function exportSettingsToTv() {
+    var b = backupBridge();
+    if (!b) { SET.msg = t("backup_no_tv"); renderSettings(); return; }
+    var where = null;
+    try { where = b.saveSettingsBackup(settingsBackupText()); } catch (e) { }
+    SET.msg = where ? t("backup_saved", { path: where }) : t("backup_failed");
+    renderSettings();
+  }
+  function importSettingsFromTv() {
+    var b = backupBridge();
+    if (!b) { SET.msg = t("backup_no_tv"); renderSettings(); return; }
+    var text = null;
+    try { text = b.loadSettingsBackup(); } catch (e) { }
+    if (!text) { SET.msg = t("backup_none"); renderSettings(); return; }
+    var r = settingsFromBackup(text);
+    if (r.error) { SET.msg = t(r.error); renderSettings(); return; }
+    ST = mergeBackupSettings(r.settings);
+    if (window.I18N) window.I18N.set(ST.lang || HOME.language || window.I18N.device());
+    saveSettings();
+    staticText();
+    SET.msg = t("backup_loaded");
+    renderSettings();
+  }
+  function backupRows() {
+    var b = backupBridge();
+    if (!b) return [];
+    var where = "";
+    try { where = b.settingsBackupPath() || ""; } catch (e) { }
+    return [
+      info("backup-where", t("backup_where"), where || t("backup_none")),
+      { kind: "action", key: "backup-export", label: t("backup_export"), sub: t("backup_export_sub"), act: exportSettingsToTv },
+      { kind: "action", key: "backup-import", label: t("backup_import"), sub: t("backup_import_sub"), confirmText: t("backup_import_confirm"), act: importSettingsFromTv }
+    ];
+  }
+
   // About, Restart home: the launcher starts a new page and looks for the bridge again, as a
   // force-stop would. Anywhere else (a browser, the on-TV app, an older launcher) the page reloads.
   function restartHome() {
@@ -5004,6 +5171,18 @@
     if (idlePhotoInput(null)) return;
     if (zone === "gear" || zone === "settings" || zone === "smart" || zone === "appmenu" || zone === "shelfmenu" || zone === "updask" || zone === "inputs") { goHome(); return; }
     openGear();
+  }
+
+  // ---------------- the remote's buttons (Button Mapping.md) ----------------
+  // The launcher sends the Person and Smart Home buttons here; the app buttons open apps in the launcher.
+  function remoteButton(name) {
+    if (kidsOn()) { window.KidsMode.askPin(); return; }
+    if (name === "person") {
+      if (!peopleOn()) { toast(t("people_none")); return; }
+      if (zone === "settings") closeSettings();
+      toPeople(); openPop(); paintFocus();
+      return;
+    }
   }
 
   // ---------------- a pointer (LG's Magic Remote, or the phone's touchpad on an LG) ----------------
@@ -5515,6 +5694,7 @@
     noDream: function () { note(t("no_dream")); },
     // the remote's Settings/gear key, caught by the launcher natively (MainActivity.dispatchKeyEvent)
     settingsKey: function () { blip(0, 0); settingsKey(); },
+    remoteButton: function (name) { remoteButton(name); },
     resume: function () { toggleScreenOff(false); setIdleAmbient(false); resetSmartIdle(); okReset(); refresh(); if (!OFFLINE) refreshQuick(); refreshWeather(); startVideo(); sceneVideos(true); refreshMusic(); refreshCards(true); if (window.AmbientWeather) window.AmbientWeather.resume(); resetIdlePhoto(); },
     // an app is in front: the video background stops until the home is back
     pause: function () { saveFocusNow(); pauseVideo(); },

@@ -155,6 +155,11 @@ class MainActivity : Activity() {
             restartPage()
             return
         }
+        // A remote button caught by KeyWatch while another app was in front (Button Mapping.md).
+        intent.getStringExtra("remote")?.let { name ->
+            main.postDelayed({ js("window.tv && tv.remoteButton && tv.remoteButton(" + JSONObject.quote(name) + ")") }, 250)
+            return
+        }
         // The remote's gear button, caught by KeyWatch: open the gear menu (a moment's wait in case
         // we were just brought forward from another app and the page is still settling).
         if (intent.getBooleanExtra("gear", false)) {
@@ -204,6 +209,17 @@ class MainActivity : Activity() {
         js("window.tv && tv.pause && tv.pause()")   // the video background stops while an app is in front
     }
 
+    /** A remote button of Button Mapping.md, while the launcher is in front: an app, a page action, or the Smart Home card. */
+    private fun remoteButton(b: RemoteButtons.Button) {
+        when (val a = b.action) {
+            is RemoteButtons.Action.Launch -> RemoteButtons.installed(this, a.packages)?.let { launchPackage(it) }
+            is RemoteButtons.Action.Component -> RemoteButtons.intentFor(this, a)?.let { start(it) }
+            is RemoteButtons.Action.Page -> js("window.tv && tv.remoteButton && tv.remoteButton(" + JSONObject.quote(a.name) + ")")
+            is RemoteButtons.Action.SmartHome -> SmartHomeOverlay.toggle(this)
+            is RemoteButtons.Action.System -> Unit   // notifications and the app switcher: KeyWatch only
+        }
+    }
+
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
         // Every kind of remote: game controller A, Select and the number pad's Enter count as OK,
         // controller B and Escape as BACK. The page then only has to know OK and BACK.
@@ -220,6 +236,12 @@ class MainActivity : Activity() {
         // The WebView does not pass KEYCODE_SETTINGS on to the page, so it is caught here.
         if (event.keyCode == KeyEvent.KEYCODE_SETTINGS) {
             if (event.action == KeyEvent.ACTION_UP && event.repeatCount == 0 && pageReady) js("window.tv && tv.settingsKey && tv.settingsKey()")
+            return true
+        }
+        // The remote buttons of Button Mapping.md (Person, Smart Home, the apps). The system's own
+        // (notifications, app switcher) fall through to the lines below, as before.
+        RemoteButtons.find(event)?.takeIf { it.action !is RemoteButtons.Action.System }?.let { b ->
+            if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) remoteButton(b)
             return true
         }
         // The TV's own keys (TV/channels, guide, channel up and down, last channel, input): the home
@@ -862,7 +884,29 @@ class MainActivity : Activity() {
         fun removePhoto(name: String) {
             photoFile(name)?.delete()
         }
+
+        // Home settings backup: one JSON file in the app's own folder on this TV. No permission needed;
+        // it is reached over adb or a file manager at Android/data/app.couchtv.launcher/files/settings.
+        @JavascriptInterface
+        fun saveSettingsBackup(json: String): String? = try {
+            val f = settingsBackupFile()
+            f.parentFile?.mkdirs()
+            f.writeText(json, Charsets.UTF_8)
+            f.absolutePath
+        } catch (e: Exception) {
+            null
+        }
+
+        @JavascriptInterface
+        fun loadSettingsBackup(): String? = settingsBackupFile().takeIf { it.isFile }?.readText(Charsets.UTF_8)
+
+        @JavascriptInterface
+        fun settingsBackupPath(): String? = settingsBackupFile().takeIf { it.isFile }?.absolutePath
     }
+
+    // ---------------------------------------------------------------- the Home settings backup file
+    private fun settingsBackupFile(): java.io.File =
+        java.io.File(getExternalFilesDir("settings") ?: filesDir, "couch-tv-settings.json")
 
     // ---------------------------------------------------------------- the household's own photos
 

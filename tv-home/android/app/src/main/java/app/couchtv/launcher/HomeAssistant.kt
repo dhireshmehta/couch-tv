@@ -171,7 +171,7 @@ object HomeAssistant {
         } catch (e: Exception) { null }
     }
 
-    private fun service(s: Settings, domain: String, service: String, data: JSONObject): Boolean =
+    fun service(s: Settings, domain: String, service: String, data: JSONObject): Boolean =
         call(s, "POST", "/api/services/$domain/$service", data, 512 * 1024).first in 200..299
 
     // ---------------------------------------------------------------- what the page may ask
