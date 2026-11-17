@@ -1,6 +1,8 @@
 package app.couchtv.launcher
 
 import android.accessibilityservice.AccessibilityService
+import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.util.Log
 import android.view.KeyEvent
@@ -43,7 +45,8 @@ class KeyWatch : AccessibilityService() {
             Log.i("couchtv-keywatch", "remote ${b.label} keyCode=${event.keyCode} scan=${event.scanCode}")
             runCatching {
                 when (val a = b.action) {
-                    is RemoteButtons.Action.System -> performGlobalAction(a.global)
+                    is RemoteButtons.Action.System ->
+                        Log.i("couchtv-keywatch", "${b.label}: system action ok=${performGlobalAction(a.global)}")
                     is RemoteButtons.Action.Launch, is RemoteButtons.Action.Component ->
                         RemoteButtons.intentFor(this, a)?.let { startActivity(it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
                     is RemoteButtons.Action.SmartHome -> SmartHomeOverlay.toggle(applicationContext)
@@ -57,6 +60,14 @@ class KeyWatch : AccessibilityService() {
     }
 
     companion object {
+        /** Whether the person has turned this service on (Settings, Accessibility, Home gear button). */
+        fun enabled(ctx: Context): Boolean {
+            val me = ComponentName(ctx, KeyWatch::class.java).flattenToString()
+            val list = android.provider.Settings.Secure.getString(ctx.contentResolver,
+                android.provider.Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES) ?: return false
+            return list.split(':').any { it.equals(me, ignoreCase = true) }
+        }
+
         /** The ONVO remote's gear: KEYCODE_BUTTON_14 (201), raw Linux KEY_TAPE (0x180 = 384), which
          *  the global-key table hands to MediaTek's hot-key agent. 176 is Android's own Settings key,
          *  kept for remotes that send it. */

@@ -4634,12 +4634,27 @@
       info("code", t("about_code"), REPO_URL),
       info("run", t("about_running"), t(run)),
       info("kept", t("about_kept"), t(OFFLINE || data.bridge === false ? "kept_tv" : "kept_both"))
-    ]).concat(backupRows(), [
+    ]).concat(remoteRows(), backupRows(), [
       { kind: "action", key: "restart", label: t("about_restart"), sub: t("about_restart_sub"), act: restartHome },
       { kind: "action", key: "reset", label: t("about_reset"), sub: t("about_reset_sub"), danger: true, confirmText: t("confirm_reset"),
         act: resetSettings }
     ]);
   }
+  // ---- remote buttons: what the TV lets couch-tv do (the accessibility service, display over other apps) ----
+  function remoteRows() {
+    if (!TV || !TV.remoteStatus || !TV.openAccessibilitySettings || !TV.openOverlaySettings) return [];
+    var s = {};
+    try { s = JSON.parse(TV.remoteStatus()) || {}; } catch (e) { }
+    return [
+      info("remote-buttons", t("remote_buttons"), s.buttons ? t("on") : t("off"), s.buttons ? "" : t("remote_buttons_off_sub")),
+      { kind: "action", key: "remote-accessibility", label: t("remote_open_accessibility"), sub: t("remote_open_accessibility_sub"),
+        act: function () { TV.openAccessibilitySettings(); } },
+      info("remote-overlay", t("remote_overlay"), s.overlay ? t("on") : t("off"), s.overlay ? "" : t("remote_overlay_off_sub")),
+      { kind: "action", key: "remote-overlay-open", label: t("remote_open_overlay"), sub: t("remote_open_overlay_sub"),
+        act: function () { TV.openOverlaySettings(); } }
+    ];
+  }
+
   // ---- Home settings backup: one JSON file on this TV (the launcher's app folder, MainActivity Native) ----
   // The file holds the Home settings except the photos and the Home Assistant token: those belong to
   // this TV, so a load keeps this TV's own. Needs the launcher; a browser or a preview has none.

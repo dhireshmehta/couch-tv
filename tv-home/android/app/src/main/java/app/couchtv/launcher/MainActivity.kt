@@ -240,6 +240,15 @@ class MainActivity : Activity() {
         }
         // The remote buttons of Button Mapping.md (Person, Smart Home, the apps). The system's own
         // (notifications, app switcher) fall through to the lines below, as before.
+        // Notifications and the app switcher need the accessibility service: say so when it is off, and let
+        // the key go on as before.
+        RemoteButtons.find(event)?.takeIf { it.action is RemoteButtons.Action.System }?.let {
+            if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0 && !KeyWatch.enabled(this)) {
+                android.widget.Toast.makeText(this,
+                    "Turn on Home gear button in Settings, Accessibility, for the notifications and app switcher keys",
+                    android.widget.Toast.LENGTH_LONG).show()
+            }
+        }
         RemoteButtons.find(event)?.takeIf { it.action !is RemoteButtons.Action.System }?.let { b ->
             if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) remoteButton(b)
             return true
@@ -883,6 +892,26 @@ class MainActivity : Activity() {
         @JavascriptInterface
         fun removePhoto(name: String) {
             photoFile(name)?.delete()
+        }
+
+        // Remote buttons status for Home settings, About: the accessibility service and display over other apps.
+        @JavascriptInterface
+        fun remoteStatus(): String = JSONObject()
+            .put("buttons", KeyWatch.enabled(this@MainActivity))
+            .put("overlay", android.provider.Settings.canDrawOverlays(this@MainActivity))
+            .toString()
+
+        @JavascriptInterface
+        fun openAccessibilitySettings() {
+            runCatching { startActivity(Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+        }
+
+        @JavascriptInterface
+        fun openOverlaySettings() {
+            runCatching {
+                startActivity(Intent(android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    android.net.Uri.parse("package:" + packageName)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            }
         }
 
         // Home settings backup: one JSON file in the app's own folder on this TV. No permission needed;
